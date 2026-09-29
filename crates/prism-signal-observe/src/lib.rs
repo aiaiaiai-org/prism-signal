@@ -28,7 +28,7 @@ use prism_signal_core::{
 pub use gazetteer::{Gazetteer, GazetteerError, Place, PlaceMatch, PlaceRank};
 
 /// Normalizer name recorded in observation provenance.
-pub const NORMALIZER: &str = concat!("prism-signal-normalize/", env!("CARGO_PKG_VERSION"));
+pub const NORMALIZER: &str = concat!("prism-signal-observe/", env!("CARGO_PKG_VERSION"));
 
 /// How long observations stay valid. The defaults are provisional working values, not
 /// measured ones; a deployment should set its own from evidence.
@@ -78,7 +78,7 @@ impl Default for NormalizeRules {
     }
 }
 
-/// Why a line or item produced no observation. In `docs/normalization.md` these appear as
+/// Why a line or item produced no observation. In `docs/observation.md` these appear as
 /// `forwarded`, `unlocated`, and `ambiguous_place`.
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum SkipReason {

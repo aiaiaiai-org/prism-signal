@@ -52,7 +52,7 @@ The runtime is stateless. The hub supplies the observation window with every req
 | --- | --- |
 | `prism-signal-core` | Source-neutral evidence and located observation values |
 | `prism-signal-geo` | Deterministic, bounded H3 covers of observation geometry |
-| `prism-signal-normalize` | Rule-based channel text to located observations, with a gazetteer |
+| `prism-signal-observe` | Rule-based channel text to located observations, with a gazetteer |
 | `prism-signal-source` | Evidence source port |
 | `prism-signal-source-telegram` | Telegram public channel preview adapter |
 | `prism-signal-collect` | NDJSON collector CLI |
@@ -65,6 +65,6 @@ cargo run -p prism-signal-collect -- telegram vanek_nikolaev backfill > vanek.nd
 
 Evidence is collected from Telegram public channels, normalized into located observations, and covered by H3 cells. Fusion and the protocol are still design. No license file exists yet. The intended license is Apache-2.0 to match `prism`; this is a proposal until the repository policy is added.
 
-The bundled gazetteer `crates/prism-signal-normalize/data/gazetteer-ua.tsv` is derived from [GeoNames](https://www.geonames.org) data, licensed [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
+The bundled gazetteer `crates/prism-signal-observe/data/gazetteer-ua.tsv` is derived from [GeoNames](https://www.geonames.org) data, licensed [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
 
 <!-- © 2026 aiaiaiai · aiaiaiai.org -->

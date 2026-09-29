@@ -936,7 +936,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "prism-signal-normalize"
+name = "prism-signal-observe"
 version = "0.1.0-alpha.1"
 dependencies = [
  "prism-signal-core",

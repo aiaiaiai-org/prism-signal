@@ -5,7 +5,7 @@
 
 use prism_signal_core::{Evidence, Geometry, HazardKind, SignalObservation};
 use prism_signal_geo::{GridProfile, cover};
-use prism_signal_normalize::{Gazetteer, NormalizeRules, Normalized, Normalizer, SkipReason};
+use prism_signal_observe::{Gazetteer, NormalizeRules, Normalized, Normalizer, SkipReason};
 use prism_signal_source_telegram::{ChannelName, parse_preview};
 
 const LIVE_PAGES: [&str; 2] = [

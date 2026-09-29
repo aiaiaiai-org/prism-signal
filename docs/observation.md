@@ -1,6 +1,6 @@
-# Normalization
+# Observation from channel text
 
-`prism-signal-normalize` turns the text of an `Evidence` item into located `SignalObservation`s. It is a deterministic reading of informal text, not an authority. Every observation it produces is uncalibrated evidence and carries no confidence value.
+`prism-signal-observe` turns the text of an `Evidence` item into located `SignalObservation`s. It is a deterministic reading of informal text, not an authority. Every observation it produces is uncalibrated evidence and carries no confidence value.
 
 ## From a line to observations
 
@@ -65,7 +65,7 @@ A generic `ракета` is not counted separately when it only restates a balli
 
 The gazetteer is tab-separated data: `id`, `name`, `lat`, `lon`, GeoNames feature code, `population`, and comma-separated aliases.
 
-`Gazetteer::ukraine()` loads the bundled file `crates/prism-signal-normalize/data/gazetteer-ua.tsv`. `scripts/build_gazetteer.py` generates it from the GeoNames `UA.zip` dump. It keeps:
+`Gazetteer::ukraine()` loads the bundled file `crates/prism-signal-observe/data/gazetteer-ua.tsv`. `scripts/build-geonames-gazetteer.py` generates it from the GeoNames `UA.zip` dump. It keeps:
 
 - populated places of at least 1,000 inhabitants;
 - every national, regional, and district seat, whatever its population;
@@ -77,7 +77,7 @@ To refresh the file:
 
 ```bash
 curl -sSO https://download.geonames.org/export/dump/UA.zip
-python3 scripts/build_gazetteer.py UA.zip > crates/prism-signal-normalize/data/gazetteer-ua.tsv
+python3 scripts/build-geonames-gazetteer.py UA.zip > crates/prism-signal-observe/data/gazetteer-ua.tsv
 ```
 
 Some tests use a small synthetic gazetteer with placeholder coordinates. They check which names are read, not positions.

@@ -8,7 +8,7 @@
 use prism_signal_core::{
     Evidence, ExternalId, HazardKind, Provenance, SignalObservation, SourceId, Stance, Timestamp,
 };
-use prism_signal_normalize::{
+use prism_signal_observe::{
     Gazetteer, NORMALIZER, NormalizeRules, Normalized, Normalizer, SkipReason,
 };
 use prism_signal_source_telegram::{ChannelName, parse_preview};

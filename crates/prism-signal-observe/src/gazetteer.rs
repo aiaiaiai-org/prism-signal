@@ -109,7 +109,7 @@ fn key(tokens: &[Token]) -> Vec<String> {
 }
 
 /// Populated places of Ukraine generated from GeoNames (CC BY 4.0) by
-/// `scripts/build_gazetteer.py`.
+/// `scripts/build-geonames-gazetteer.py`.
 const UKRAINE: &str = include_str!("../data/gazetteer-ua.tsv");
 
 impl Gazetteer {

@@ -328,7 +328,7 @@ pub struct ObservationProvenance {
     pub evidence_id: ExternalId,
     /// Public URL of that evidence.
     pub evidence_url: String,
-    /// Normalizer name and version, such as `prism-signal-normalize/0.1.0`.
+    /// Normalizer name and version, such as `prism-signal-observe/0.1.0`.
     pub normalizer: String,
     /// The text fragments that produced the kind and the place, in source order.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]

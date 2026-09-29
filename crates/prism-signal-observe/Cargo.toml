@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 [package]
-name = "prism-signal-normalize"
+name = "prism-signal-observe"
 description = "Rule-based normalization of channel evidence into located Prism Signal observations"
 version.workspace = true
 edition.workspace = true
