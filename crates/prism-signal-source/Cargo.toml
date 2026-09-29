@@ -1,0 +1,21 @@
+# © 2026 aiaiaiai · aiaiaiai.org
+# SPDX-License-Identifier: Apache-2.0
+
+[package]
+name = "prism-signal-source"
+description = "Source adapter port for Prism Signal"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+publish = false
+
+[lints]
+workspace = true
+
+[dependencies]
+async-trait.workspace = true
+prism-signal-core = { path = "../prism-signal-core" }
+thiserror.workspace = true
