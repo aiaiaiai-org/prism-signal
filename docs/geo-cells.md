@@ -19,7 +19,8 @@ Prism Signal reads the profile through configuration bound to a `0x1` contract v
 
 A zone is a polygon. `cover(polygon, resolution)` returns the cells whose centers fall inside it, using the H3 polygon fill, with a declared bound:
 
-- `max_cells` is part of the request; a larger cover fails with `cover_too_large` rather than silently truncating;
+- `max_cells` is part of the request; a larger cover fails with `cover_too_large` rather than silently truncating. The size is estimated from the polygon's area and perimeter before any cell is computed, so an oversize polygon is refused cheaply;
+- a polygon that contains no cell center, such as one smaller than a cell, gives the cells it touches instead of an empty set, so a zone is never silently lost;
 - the result is sorted and deduplicated, so equal input gives equal output;
 - an optional compaction step may emit parents for transport, but the canonical form is the uniform resolution set.
 

@@ -4,14 +4,22 @@
 //! Source-neutral evidence values for Prism Signal.
 //!
 //! [`Evidence`] is what a source adapter returns: one unit of raw material exactly as the
-//! source published it, with provenance. It carries no geometry and no hazard meaning;
-//! normalization into a located observation is a later, separate step.
+//! source published it, with provenance. It carries no geometry and no hazard meaning.
+//! Normalization turns evidence into a located [`SignalObservation`], a separate step owned
+//! by a normalizer.
+
+mod observation;
 
 use std::fmt;
 
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 use time::{OffsetDateTime, UtcOffset, format_description::well_known::Rfc3339};
+
+pub use observation::{
+    CellId, CellResolution, ConfidenceBand, Geometry, GeometryError, HazardKind,
+    ObservationProvenance, Position, Ring, SignalObservation, Stance, TtlSeconds,
+};
 
 /// Invalid core value.
 #[derive(Clone, Debug, Eq, Error, PartialEq)]

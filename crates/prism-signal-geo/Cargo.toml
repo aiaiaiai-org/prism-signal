@@ -1,0 +1,24 @@
+# © 2026 aiaiaiai · aiaiaiai.org
+# SPDX-License-Identifier: Apache-2.0
+
+[package]
+name = "prism-signal-geo"
+description = "Deterministic H3 cell covers for Prism Signal geometry"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+publish = false
+
+[lints]
+workspace = true
+
+[dependencies]
+# Newer h3o and geo releases need Rust 1.88; these keep the workspace MSRV at 1.85.
+geo = { version = "0.30", default-features = false }
+h3o = { version = "0.8", features = ["geo"] }
+prism-signal-core = { path = "../prism-signal-core" }
+serde.workspace = true
+thiserror.workspace = true

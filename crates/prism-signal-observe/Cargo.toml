@@ -1,0 +1,25 @@
+# © 2026 aiaiaiai · aiaiaiai.org
+# SPDX-License-Identifier: Apache-2.0
+
+[package]
+name = "prism-signal-observe"
+description = "Rule-based normalization of channel evidence into located Prism Signal observations"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+publish = false
+
+[lints]
+workspace = true
+
+[dependencies]
+prism-signal-core = { path = "../prism-signal-core" }
+thiserror.workspace = true
+
+[dev-dependencies]
+prism-signal-geo = { path = "../prism-signal-geo" }
+prism-signal-source-telegram = { path = "../prism-signal-source-telegram" }
+serde_json.workspace = true
