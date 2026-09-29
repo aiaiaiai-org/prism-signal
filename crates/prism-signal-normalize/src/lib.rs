@@ -240,11 +240,25 @@ impl Normalizer {
         let mut role_at: Vec<Option<PlaceRole>> = vec![None; tokens.len()];
         let mut done = Vec::new();
         let mut clause = Clause::default();
+        let mut words_in_clause = 0_usize;
         let mut i = 0;
         while i < tokens.len() {
             let token = &tokens[i];
             if token.barrier_before && i > 0 {
                 done.push(std::mem::take(&mut clause));
+            }
+            if token.barrier_before {
+                words_in_clause = 0;
+                clause.leads_with_count = token.folded.chars().all(|c| c.is_ascii_digit());
+            }
+            // The opening two words, so `все остальные летят на Днепр` refers back like
+            // `остальные летят на Днепр` does.
+            if words_in_clause < 2 && self.lexicon.is_continuation_lead(&token.folded) {
+                clause.leads_with_continuation = true;
+            }
+            words_in_clause += 1;
+            if self.lexicon.is_continuation_mark(&token.folded) {
+                clause.marked_continuation = true;
             }
             let context = self.context(tokens, &role_at, i);
             if self.lexicon.starts_cleared_phrase(tokens, i) {
@@ -325,25 +339,53 @@ struct Clause {
     cleared_phrase: bool,
     /// The kinds were carried over from an earlier sentence.
     inherited: bool,
+    /// The sentence opens with a number, as an item of a list does.
+    leads_with_count: bool,
+    /// The sentence opens with a word that refers back (`эти`, `ещё`).
+    leads_with_continuation: bool,
+    /// The sentence contains the channel's noise idiom (`громко`).
+    marked_continuation: bool,
     places: Vec<PlaceMention>,
     unresolved: Vec<String>,
 }
 
+/// Kinds a later sentence may take, and where they came from.
+struct Carried {
+    kinds: BTreeSet<HazardKind>,
+    /// The sentence they came from names no place, so it reads as the header of a list
+    /// (`общая по мопедам:`).
+    from_header: bool,
+}
+
 /// Lets a sentence with a place but no kind of its own take the kind of the nearest earlier
-/// sentence of the same post that reported a threat.
+/// sentence of the same post that reported a threat, but only on an explicit signal that it
+/// continues that threat.
 ///
-/// Posts are often written as a header and a list (`общая по мопедам: ⏎ 1 под Киевом ⏎ 1 над
-/// Днепром`), or as a kind on one line and its destination on the next. A sentence that calls a
-/// threat off ends the carry-over.
+/// Two signals count:
+///
+/// - the sentence refers back: it opens (in its first two words) with `эти`, `остальные`, `ещё` and the like, or carries
+///   the channel's noise idiom (`может быть громко в Николаеве`);
+/// - the sentence is an item of a list: the earlier sentence was a header with no place of its
+///   own (`общая по мопедам:`) and this one opens with a number (`1 под Киевом`).
+///
+/// A place with a cue is not enough. `1 мопед на Киев ⏎ ПВО в Киеве работает` must not turn the
+/// second sentence into a drone report. A sentence that calls a threat off ends the carry-over.
 fn carry_kinds_forward(clauses: &mut [Clause]) {
-    let mut carried: Option<BTreeSet<HazardKind>> = None;
+    let mut carried: Option<Carried> = None;
     for clause in clauses {
         if !clause.kinds.is_empty() {
-            carried = (!clause.cleared()).then(|| clause.kinds.clone());
+            carried = (!clause.cleared()).then(|| Carried {
+                kinds: clause.kinds.clone(),
+                from_header: clause.places.is_empty(),
+            });
         } else if !clause.cleared() && clause.affects_a_place() {
-            if let Some(kinds) = &carried {
-                clause.kinds = kinds.clone();
-                clause.inherited = true;
+            if let Some(source) = &carried {
+                let refers_back = clause.leads_with_continuation || clause.marked_continuation;
+                let list_item = source.from_header && clause.leads_with_count;
+                if refers_back || list_item {
+                    clause.kinds = source.kinds.clone();
+                    clause.inherited = true;
+                }
             }
         }
     }

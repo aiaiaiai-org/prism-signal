@@ -221,5 +221,32 @@
   "місту",
   "містом",
   "місті"
- ]
+ ],
+ "continuation": {
+  "leads": [
+   "эти",
+   "этот",
+   "такие",
+   "такой",
+   "остальные",
+   "остальное",
+   "ещё",
+   "еще",
+   "также",
+   "тоже",
+   "повторно",
+   "ці",
+   "цей",
+   "такі",
+   "решта",
+   "інші",
+   "ще",
+   "також"
+  ],
+  "marks": [
+   "громк",
+   "гучн"
+  ],
+  "note": "leads are words that open a sentence which refers back to the previous threat; marks are the channel's idiom for expected noise ('может быть громко в Николаеве') and mean the same wherever they stand"
+ }
 }

@@ -19,7 +19,7 @@ A post is split into sentences (a newline, `.`, `!`, `?`, or `;` ends one). Each
 | `phase` | `threat`, or `cleared` when the sentence calls a threat off |
 | `places[]` | known places with `role`, coordinates, and `reach_km` |
 | `unresolved[]` | capitalised words after a target or via cue that the gazetteer does not know |
-| `kind_inherited` | the kind was taken from an earlier sentence of the same post |
+| `kind_inherited` | the kind was taken from an earlier sentence of the same post, on an explicit continuation signal |
 | `url`, `forwarded` | the post's public link, and whether it was forwarded from elsewhere |
 
 `Reading::actionable()` is true when a reading reports a threat of a known kind at a place with role `target` or `via`. It is a property of the text. Whether anyone is alerted is a hub policy applied to fused assessments, never this crate's decision.
@@ -50,7 +50,11 @@ Rules, in the order they apply:
 - A generic `ракета` next to `баллистика` is the same threat named twice, so the generic kind is dropped.
 - `минус`, `відбій`, `отбой` call a threat off. `минус по мопедам` is `phase: cleared, kind: drone`. A bare `минус по всему на Маяки` is `cleared` with no kind and its places kept.
 - A weaker phrase (`больше не`, `не фиксируется`) also clears, but only a threat of a stated kind: `я больше не могу молчать` gives nothing.
-- A sentence with a place but no kind takes the kind of the nearest earlier threat sentence in the same post. This covers the channel's summary format (`общая по мопедам: ⏎ 1 под Киевом ⏎ 1 над Днепром`) and a kind on one line with its destination on the next. The reading says so in `kind_inherited`. A sentence that calls a threat off ends the carry-over.
+- A sentence with a place but no kind of its own takes the kind of the nearest earlier threat sentence in the same post, but only on an explicit signal that it continues that threat. The reading says so in `kind_inherited`. Two signals count:
+  - it refers back: it opens, in its first two words, with `эти`, `остальные`, `ещё`, `также` and the like (`эти летят на Кривой Рог`), or it carries the channel's noise idiom (`может быть громко в Николаеве`);
+  - it is an item of a list: the earlier sentence is a header that names a kind but no place (`общая по мопедам:`) and this one opens with a number (`1 под Киевом`).
+
+  A place with a cue is not a signal. `1 мопед на Киев ⏎ ПВО в Киеве работает` gives one reading, not two, and `1 мопед на Киев ⏎ 3 взрыва в Киеве` gives one too, because the earlier sentence already has its own place. A sentence that calls a threat off ends the carry-over. The rule is deliberately narrow: it costs recall (about 2% of actionable readings on the sample, for example `летит пока в сторону Кульбакино`) and buys the guarantee that unrelated prose never becomes a hazard report.
 - Posts longer than 500 characters give no readings. Live alerts are one or two short lines; long posts are news and daily summaries of attacks already over. The limit is `Normalizer::max_text_chars`.
 
 ## Matching
@@ -82,7 +86,7 @@ python3 scripts/build-gazetteer.py UA.txt     # or use a local copy
 
 ## Measured on the channel
 
-On 495 posts from `vanek_nikolaev` spanning 26 days (collected 2026-09-29), 713 readings, 488 of them actionable, 163 with an inherited kind. The most frequent affected places were Kyiv, Mykolaiv, Odesa, Brovary, and Dnipro.
+On 495 posts from `vanek_nikolaev` spanning 26 days (collected 2026-09-29), 704 readings, 479 of them actionable, 154 with an inherited kind. The most frequent affected places were Kyiv, Mykolaiv, Odesa, Brovary, and Dnipro.
 
 The other 129 threat readings have a kind but no `target` or `via` place. 68 of them use a region word, 17 look like launch reports, and 22 carry `unresolved` words. In rough order of size:
 

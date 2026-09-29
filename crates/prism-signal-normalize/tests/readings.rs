@@ -220,6 +220,50 @@ fn a_kind_is_carried_to_the_places_listed_after_it() {
 }
 
 #[test]
+fn a_place_in_unrelated_prose_does_not_inherit_the_kind() {
+    // The reviewed case: a cue and a place are not enough to continue a threat.
+    let readings = read("1 мопед на Киев\nПВО в Киеве работает");
+    assert_eq!(readings.len(), 1);
+    assert_eq!(places(&readings[0]), [("Київ", PlaceRole::Target)]);
+    assert!(!readings[0].kind_inherited);
+
+    // A leading number alone is not a list: the earlier sentence already had its own place.
+    let counted = read("1 мопед на Киев\n3 взрыва в Киеве");
+    assert_eq!(counted.len(), 1);
+
+    // A header with no place opens a list only for items that are counted.
+    let header = read("общая по мопедам:\nПВО в Киеве работает");
+    assert_eq!(header.len(), 1);
+    assert!(header[0].places.is_empty());
+    assert!(!header.iter().any(Reading::actionable));
+
+    // `все` alone is not a reference: it is common in ordinary sentences.
+    let everyone = read("1 мопед над Киевом\nвсе в Киеве спокойны");
+    assert_eq!(everyone.len(), 1);
+
+    // Nor does a number that is not an item: it must open the sentence.
+    let mid = read("общая по мопедам:\nв Киеве слышны 3 взрыва");
+    assert!(!mid.iter().any(Reading::actionable));
+}
+
+#[test]
+fn a_sentence_that_refers_back_continues_the_threat() {
+    for text in [
+        "1 мопед над Киевом\nещё один летит к Фастову",
+        "1 мопед над Киевом\nэти летят на Днепр",
+        "1 мопед над Киевом\nостальные подлетают к Броварам",
+        "1 мопед над Киевом\nвсе остальные летят на Днепр",
+        "1 мопед над Киевом\nможет быть громко в Николаеве!",
+    ] {
+        let readings = read(text);
+        assert_eq!(readings.len(), 2, "{text}");
+        assert_eq!(readings[1].kind, Some(HazardKind::Drone), "{text}");
+        assert!(readings[1].kind_inherited, "{text}");
+        assert!(readings[1].actionable(), "{text}");
+    }
+}
+
+#[test]
 fn an_all_clear_ends_the_carry_over() {
     let readings = read("минус по мопедам\n\n1 над Киевом");
     assert_eq!(readings.len(), 1);

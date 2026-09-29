@@ -18,6 +18,16 @@ struct LexiconDoc {
     cues: CuesDoc,
     conjunctions: Vec<String>,
     fillers: Vec<String>,
+    continuation: ContinuationDoc,
+}
+
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct ContinuationDoc {
+    leads: Vec<String>,
+    marks: Vec<String>,
+    #[serde(default, rename = "note")]
+    _note: Option<String>,
 }
 
 #[derive(Deserialize)]
@@ -66,6 +76,8 @@ pub(crate) struct Lexicon {
     cues: Vec<(PlaceRole, WordSet)>,
     conjunctions: WordSet,
     fillers: WordSet,
+    continuation_leads: WordSet,
+    continuation_marks: WordSet,
 }
 
 impl Lexicon {
@@ -118,6 +130,8 @@ impl Lexicon {
             ],
             conjunctions: WordSet::of_forms(&doc.conjunctions)?,
             fillers: WordSet::of_forms(&doc.fillers)?,
+            continuation_leads: WordSet::of_forms(&doc.continuation.leads)?,
+            continuation_marks: WordSet::new(&[], &doc.continuation.marks)?,
         })
     }
 
@@ -163,6 +177,18 @@ impl Lexicon {
     /// `центром` does in `над центром Николаева`.
     pub fn is_filler(&self, word: &str) -> bool {
         self.fillers.matches(word)
+    }
+
+    /// Whether a folded word, opening a sentence, says it refers back to the previous threat
+    /// (`эти летят на Кривой Рог`, `ещё 1 подлетает к Киеву`).
+    pub fn is_continuation_lead(&self, word: &str) -> bool {
+        self.continuation_leads.matches(word)
+    }
+
+    /// Whether a folded word is the channel's idiom for expected noise, as `громко` in `может
+    /// быть громко в Николаеве`. It refers to the threat just reported wherever it stands.
+    pub fn is_continuation_mark(&self, word: &str) -> bool {
+        self.continuation_marks.matches(word)
     }
 
     /// Whether a folded word joins two list items, as `и` in `Киеву и Одессе`.
