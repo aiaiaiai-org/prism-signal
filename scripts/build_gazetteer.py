@@ -10,7 +10,8 @@ Input is https://download.geonames.org/export/dump/UA.zip (or the extracted UA.t
 GeoNames data is licensed CC BY 4.0; the output keeps that attribution in its header.
 
 Kept: populated places (feature class P) with a population of at least MIN_POPULATION,
-plus every national, regional, and district seat whatever its population. Aliases are the
+plus every national, regional, and district seat whatever its population. City sections
+(PPLX) and historical or abandoned places are left out. Aliases are the
 Cyrillic alternate names and the ASCII name. Output is sorted by GeoNames id, so the same
 input always gives the same bytes.
 """
@@ -18,10 +19,14 @@ input always gives the same bytes.
 import io
 import re
 import sys
+import unicodedata
 import zipfile
 
 MIN_POPULATION = 1000
 SEAT_CODES = {"PPLC", "PPLA", "PPLA2"}
+# Sections of a city (PPLX) and historical or abandoned places are left out: a city
+# district's population would outweigh the village that shares its name.
+EXCLUDED_CODES = {"PPLX", "PPLH", "PPLQ", "PPLW"}
 CYRILLIC = re.compile(r"[Ѐ-ӿ]")
 UNSAFE = re.compile(r"[\t,\r\n]")
 
@@ -40,11 +45,18 @@ def read_rows(path):
             yield fields
 
 
+def strip_stress(text):
+    """Removes combining marks such as the stress accent in "Ові́діополь"."""
+    decomposed = unicodedata.normalize("NFD", text)
+    kept = "".join(c for c in decomposed if not unicodedata.combining(c) or c in "\u0306\u0308")
+    return unicodedata.normalize("NFC", kept)
+
+
 def aliases(name, asciiname, alternates):
     seen = {name}
     out = []
     for candidate in [asciiname, *alternates.split(",")]:
-        candidate = candidate.strip()
+        candidate = strip_stress(candidate.strip())
         if not candidate or candidate in seen or UNSAFE.search(candidate):
             continue
         if candidate != asciiname and not CYRILLIC.search(candidate):
@@ -63,7 +75,7 @@ def main(argv):
         geonameid, name, asciiname, alternates = f[0], f[1], f[2], f[3]
         lat, lon, feature_class, feature_code = f[4], f[5], f[6], f[7]
         population = int(f[14] or 0)
-        if feature_class != "P":
+        if feature_class != "P" or feature_code in EXCLUDED_CODES:
             continue
         if population < MIN_POPULATION and feature_code not in SEAT_CODES:
             continue

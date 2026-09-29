@@ -218,6 +218,11 @@ impl<'g> Normalizer<'g> {
                 i += 1;
                 continue;
             };
+            if tokens.get(i + len).is_some_and(lexicon::is_admin_area) {
+                // `Вознесенского района`: the name of a district or region, not the town.
+                i += len + 1;
+                continue;
+            }
             let words = tokens[i..i + len]
                 .iter()
                 .map(|t| t.raw.as_str())

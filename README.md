@@ -63,6 +63,8 @@ cargo run -p prism-signal-collect -- telegram vanek_nikolaev backfill > vanek.nd
 
 ## Status
 
-Step one of the roadmap: evidence collection from Telegram public channels. Fusion, cells, and the protocol are still design. No license file exists yet. The intended license is Apache-2.0 to match `prism`; this is a proposal until the repository policy is added.
+Evidence is collected from Telegram public channels, normalized into located observations, and covered by H3 cells. Fusion and the protocol are still design. No license file exists yet. The intended license is Apache-2.0 to match `prism`; this is a proposal until the repository policy is added.
+
+The bundled gazetteer `crates/prism-signal-normalize/data/gazetteer-ua.tsv` is derived from [GeoNames](https://www.geonames.org) data, licensed [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
 
 <!-- © 2026 aiaiaiai · aiaiaiai.org -->

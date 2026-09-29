@@ -31,10 +31,15 @@ fn is_apostrophe(c: char) -> bool {
     matches!(c, '\'' | '’' | 'ʼ' | '`')
 }
 
-/// Folds case, `ё`, and apostrophes so spellings of one name compare equal.
+/// Combining acute and grave accents, used to mark stress in dictionaries and some names.
+fn is_stress_mark(c: char) -> bool {
+    matches!(c, '\u{0300}' | '\u{0301}')
+}
+
+/// Folds case, `ё`, stress marks, and apostrophes so spellings of one name compare equal.
 pub(crate) fn normalize_word(word: &str) -> String {
     word.chars()
-        .filter(|c| !is_apostrophe(*c))
+        .filter(|c| !is_apostrophe(*c) && !is_stress_mark(*c))
         .flat_map(char::to_lowercase)
         .map(|c| if c == 'ё' { 'е' } else { c })
         .collect()
@@ -56,7 +61,7 @@ pub(crate) fn tokenize(line: &str) -> Vec<Token> {
         current.clear();
     };
     for c in line.chars() {
-        if c.is_alphanumeric() || c == '-' || is_apostrophe(c) {
+        if c.is_alphanumeric() || c == '-' || is_apostrophe(c) || is_stress_mark(c) {
             current.push(c);
         } else {
             flush(&mut current);
@@ -117,6 +122,7 @@ mod tests {
         assert_eq!(normalize_word("Ванёк"), "ванек");
         assert_eq!(normalize_word("Кам’янське"), "камянське");
         assert_eq!(normalize_word("Кам'янське"), "камянське");
+        assert_eq!(normalize_word("Ові\u{301}діополь"), "овідіополь");
     }
 
     #[test]

@@ -108,7 +108,17 @@ fn key(tokens: &[Token]) -> Vec<String> {
         .collect()
 }
 
+/// Populated places of Ukraine generated from GeoNames (CC BY 4.0) by
+/// `scripts/build_gazetteer.py`.
+const UKRAINE: &str = include_str!("../data/gazetteer-ua.tsv");
+
 impl Gazetteer {
+    /// The bundled gazetteer of Ukraine: populated places of at least 1,000 people and all
+    /// administrative seats, from GeoNames (<https://www.geonames.org>, CC BY 4.0).
+    pub fn ukraine() -> Self {
+        Self::parse(UKRAINE).expect("bundled gazetteer is valid")
+    }
+
     /// Parses gazetteer data.
     pub fn parse(data: &str) -> Result<Self, GazetteerError> {
         let mut gazetteer = Self::default();
@@ -249,6 +259,21 @@ t:7\tWhite Church\t49.5\t30.5\tPPLA2\t200000\tБелая Церковь
         assert_eq!(found(&g, "Гамма"), Some("t:4"));
         let (m, _) = g.lookup(&tokenize("Дельта")).unwrap();
         assert!(matches!(m, PlaceMatch::Ambiguous(ref p) if p.len() == 2));
+    }
+
+    #[test]
+    fn bundled_gazetteer_parses() {
+        let g = Gazetteer::ukraine();
+        assert!(g.len() > 3000, "{}", g.len());
+        let kyiv = found_place(&g, "Киеву").expect("Kyiv resolves");
+        assert_eq!(kyiv.id, "geonames:703448");
+    }
+
+    fn found_place<'a>(g: &'a Gazetteer, text: &str) -> Option<&'a Place> {
+        match g.lookup(&tokenize(text))? {
+            (PlaceMatch::Found(place), _) => Some(place),
+            (PlaceMatch::Ambiguous(_), _) => None,
+        }
     }
 
     #[test]

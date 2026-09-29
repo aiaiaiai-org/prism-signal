@@ -48,13 +48,29 @@ When a line names a ballistic missile, a generic `ракета` in the same line
 
 The gazetteer is tab-separated data: `id`, `name`, `lat`, `lon`, GeoNames feature code, `population`, and comma-separated aliases.
 
-The production file is generated from GeoNames with `scripts/build_gazetteer.py`. It keeps populated places of at least 1,000 inhabitants plus every national, regional, and district seat, and it keeps the Cyrillic aliases. GeoNames data is CC BY 4.0, and the generated file carries that attribution. The environment that builds this repository cannot reach GeoNames yet, so tests use a small synthetic gazetteer whose coordinates are placeholders.
+`Gazetteer::ukraine()` loads the bundled file `crates/prism-signal-normalize/data/gazetteer-ua.tsv`. `scripts/build_gazetteer.py` generates it from the GeoNames `UA.zip` dump. It keeps:
+
+- populated places of at least 1,000 inhabitants;
+- every national, regional, and district seat, whatever its population;
+- Cyrillic aliases, with stress marks removed.
+
+City sections (`PPLX`) and historical places are left out, because a Kyiv district such as Vynohradar would otherwise outweigh the Odesa-oblast village of the same name. The generator is deterministic. GeoNames data is licensed CC BY 4.0, and the file header carries that attribution.
+
+To refresh the file:
+
+```bash
+curl -sSO https://download.geonames.org/export/dump/UA.zip
+python3 scripts/build_gazetteer.py UA.zip > crates/prism-signal-normalize/data/gazetteer-ua.tsv
+```
+
+Some tests use a small synthetic gazetteer with placeholder coordinates. They check which names are read, not positions.
 
 Lookup rules:
 
 - A name must start with a capitalized word. This keeps common nouns that are also village names out.
 - One case ending is removed before names are compared, so `Киеву`, `Одессы`, and `Гостомеля` match `Киев`, `Одесса`, and `Гостомель`. `-ов`/`-ів` are kept, because they belong to names like `Фастов`.
 - In a multi-word name, the words after the first also compare without vowels, so `Белой Церкви` matches `Белая Церковь`.
+- A name followed by `район`, `область`, `обл.`, or `громада` is the administrative area, not the town, and is skipped.
 - Names that several places share resolve as follows:
   - a higher administrative rank wins;
   - within the same rank, a place wins only with at least ten times the population of the next one;
@@ -65,6 +81,7 @@ Lookup rules:
 - One-word names shorter than four letters do not match an inflected form.
 - Ukrainian locatives with a vowel change (`Київ` / `Києві`) do not match.
 - Oblasts, districts, "from the sea", and directions such as "south of" are not places in this model. The gazetteer holds only point positions, and a point would misstate an area.
+- An oblast named next to a place (`Виноградара Одесской области`) is not used to pick among namesakes.
 - A line's places are not given roles. In `к Киеву со стороны Гостомеля`, both Kyiv and Hostomel are observations for the same hazard.
 - A reply's quoted text is not part of the evidence, so a clear line such as `минус по обоим` that names no place is only reported as unlocated.
 - The default TTLs are working values, not measured ones.

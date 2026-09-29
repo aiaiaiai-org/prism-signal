@@ -940,6 +940,7 @@ name = "prism-signal-normalize"
 version = "0.1.0-alpha.1"
 dependencies = [
  "prism-signal-core",
+ "prism-signal-geo",
  "prism-signal-source-telegram",
  "serde_json",
  "thiserror",

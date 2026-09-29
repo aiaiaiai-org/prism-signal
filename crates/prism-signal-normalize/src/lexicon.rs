@@ -84,6 +84,10 @@ const CLEAR_PREFIXES: &[&str] = &[
     "знищ",
 ];
 
+/// Word prefixes naming an administrative area: a place name followed by one is the area,
+/// not the town.
+const ADMIN_AREA_PREFIXES: &[&str] = &["район", "област", "облас", "обл", "громад"];
+
 /// Words that count objects must stand this close before the kind word.
 const COUNT_LOOKBACK: usize = 2;
 
@@ -107,6 +111,11 @@ fn kind_of(token: &Token) -> Option<HazardKind> {
         .iter()
         .find(|(_, prefixes)| has_prefix(token, prefixes))
         .map(|(kind, _)| *kind)
+}
+
+/// Whether the word names an administrative area (`района`, `області`, `обл`).
+pub(crate) fn is_admin_area(token: &Token) -> bool {
+    has_prefix(token, ADMIN_AREA_PREFIXES)
 }
 
 /// Whether the line reports a hazard as over.

@@ -20,5 +20,6 @@ prism-signal-core = { path = "../prism-signal-core" }
 thiserror.workspace = true
 
 [dev-dependencies]
+prism-signal-geo = { path = "../prism-signal-geo" }
 prism-signal-source-telegram = { path = "../prism-signal-source-telegram" }
 serde_json.workspace = true
