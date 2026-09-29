@@ -2,7 +2,14 @@
 
 ## Implemented now
 
-Nothing. This repository contains design documents only.
+| Surface | Current behavior |
+| --- | --- |
+| `prism-signal-core` | `Evidence`, `SourceId`, `ExternalId`, UTC `Timestamp`, media references, provenance |
+| `prism-signal-source` | Stateless `EvidenceSource` port with `Latest` / `Before` / `After` paging and typed failures |
+| `prism-signal-source-telegram` | Public channel preview (`t.me/s/…`) parser with an injected fetcher and a reqwest implementation |
+| `prism-signal-collect` | CLI that streams evidence as NDJSON: `backfill` walks history, `follow` polls for new posts |
+
+Not implemented yet: normalization into located `SignalObservation`, geo cells, fusion, `prism-signal.v1`, hub integration. The Telegram parser is tested against a synthetic fixture and has not yet been confirmed against a live page.
 
 ## Open questions
 

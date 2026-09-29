@@ -40,13 +40,27 @@ The runtime is stateless. The hub supplies the observation window with every req
 | [`architecture`](docs/architecture.md) | Ownership, dependency direction, fusion, assessment lifecycle |
 | [`geo cells`](docs/geo-cells.md) | H3 profile, polygon covering, cell fan-out without a subscriber registry |
 | [`two-way flows`](docs/flows.md) | Inbound evidence, outbound assessments, feedback, and the `0x1` bridge |
+| [`Telegram source`](docs/sources/telegram.md) | Public channel preview adapter and the collector |
 | [`protocol`](docs/protocol.md) | `prism-signal.v1` draft |
 | [`ecosystem`](docs/ecosystem.md) | Proposed rows for `prism/docs/ecosystem.md` and the dependency rules |
 | [`implementation status`](docs/status.md) | What exists now (nothing) and what is open |
 | [`roadmap`](docs/roadmap.md) | Evidence-driven implementation order |
 
+## Workspace
+
+| Package | Owns |
+| --- | --- |
+| `prism-signal-core` | Source-neutral evidence values |
+| `prism-signal-source` | Evidence source port |
+| `prism-signal-source-telegram` | Telegram public channel preview adapter |
+| `prism-signal-collect` | NDJSON collector CLI |
+
+```bash
+cargo run -p prism-signal-collect -- telegram vanek_nikolaev backfill > vanek.ndjson
+```
+
 ## Status
 
-Design only. No code, no contract, and no license file exist yet. The intended license is Apache-2.0 to match `prism`; this is a proposal until the repository policy is added.
+Step one of the roadmap: evidence collection from Telegram public channels. Fusion, cells, and the protocol are still design. No license file exists yet. The intended license is Apache-2.0 to match `prism`; this is a proposal until the repository policy is added.
 
 <!-- © 2026 aiaiaiai · aiaiaiai.org -->
