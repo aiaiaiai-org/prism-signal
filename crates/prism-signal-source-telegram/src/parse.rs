@@ -31,9 +31,17 @@ static MEDIA: LazyLock<Selector> = LazyLock::new(|| {
         ".tgme_widget_message_video_player, ",
         ".tgme_widget_message_roundvideo_player, ",
         ".tgme_widget_message_voice_player, ",
-        ".tgme_widget_message_document_wrap, ",
-        ".message_media_not_supported"
+        ".tgme_widget_message_document_wrap"
     ))
+});
+// A placeholder for media the preview cannot show. Telegram also nests it inside every video
+// player and repeats it as a fallback block after supported media, so it only counts on its own.
+static NOT_SUPPORTED: LazyLock<Selector> =
+    LazyLock::new(|| selector(".message_media_not_supported"));
+// The playable file inside a video player; the blurred backdrop copy has a different class.
+static VIDEO_FILE: LazyLock<Selector> = LazyLock::new(|| selector("video.js-message_video[src]"));
+static VIDEO_THUMB: LazyLock<Selector> = LazyLock::new(|| {
+    selector(".tgme_widget_message_video_thumb, .tgme_widget_message_roundvideo_thumb")
 });
 
 fn invalid(code: &'static str) -> SourceError {
@@ -153,7 +161,13 @@ fn parse_message(
         .map(plain_text)
         .filter(|t| !t.is_empty());
 
-    let media = message.select(&MEDIA).map(media_ref).collect();
+    let mut media: Vec<MediaRef> = message.select(&MEDIA).map(media_ref).collect();
+    if media.is_empty() && message.select(&NOT_SUPPORTED).next().is_some() {
+        media.push(MediaRef {
+            kind: MediaKind::Other,
+            url: None,
+        });
+    }
 
     let forwarded_from = message
         .select(&FORWARDED)
@@ -215,21 +229,27 @@ fn media_ref(element: ElementRef<'_>) -> MediaRef {
         MediaKind::Video
     } else if has_class(element, "tgme_widget_message_voice_player") {
         MediaKind::Audio
-    } else if has_class(element, "tgme_widget_message_document_wrap") {
-        MediaKind::Document
     } else {
-        MediaKind::Other
+        MediaKind::Document
     };
+    // Photos carry the image as the wrapper background; video players hold the file in a
+    // nested `<video>` (absent when the file is too big for the preview) and a thumbnail.
+    // The wrapper `href` is the post link on t.me, already in provenance, so it is not media.
     let url = element
         .value()
         .attr("style")
         .and_then(background_image_url)
         .or_else(|| {
             element
-                .value()
-                .attr("href")
-                .filter(|href| href.starts_with("https://"))
+                .select(&VIDEO_FILE)
+                .filter_map(|video| video.value().attr("src"))
+                .find(|src| src.starts_with("https://"))
                 .map(str::to_owned)
+        })
+        .or_else(|| {
+            element
+                .select(&VIDEO_THUMB)
+                .find_map(|thumb| thumb.value().attr("style").and_then(background_image_url))
         });
     MediaRef { kind, url }
 }

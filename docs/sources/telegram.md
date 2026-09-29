@@ -20,7 +20,8 @@ The preview exists only when the channel owner keeps it enabled. A missing previ
 | `time[datetime]` | `published_at`, converted to UTC |
 | `edited` in the meta line | `edited = true` |
 | `.js-message_text` | `text`, `<br>` as newlines; a quoted reply is not the body |
-| photo, video, round video, voice, document, unsupported media | `media[]` with kind and CDN URL when present; bytes are never fetched |
+| photo, video, round video, voice, document | `media[]` with kind and CDN URL when present (photo background, video file, else video thumbnail); bytes are never fetched |
+| "media not supported" notice | one `media[]` item of kind `other`, only when the post has no other media: Telegram also nests this notice inside every video player and repeats it after supported media |
 | forwarded-from name | `forwarded_from` |
 | post link | `provenance.url` |
 
@@ -50,6 +51,7 @@ The collector waits `--delay-ms` (default 1500 ms) between pages and backs off o
 
 ## Known limits
 
-- Parsing depends on Telegram's preview markup, which is undocumented and may change. The test fixture is synthetic and reproduces the known markup; it must be confirmed against a live page.
+- Parsing depends on Telegram's preview markup, which is undocumented and may change. Tests run on two pages captured verbatim from the live channel on 2026-09-29 (`tests/fixtures/live_*.html`) and on a synthetic fixture for cases those pages lack (service messages, standalone unsupported media). Recapture when the markup drifts.
+- An album is one post under its first id; the other ids in the album never appear as posts.
 - Polls, stickers, and location posts are not yet mapped to dedicated fields; their text, if any, is still collected.
 - Edits and deletions after collection are not observed.
