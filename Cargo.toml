@@ -5,6 +5,7 @@
 members = [
   "crates/prism-signal-core",
   "crates/prism-signal-geo",
+  "crates/prism-signal-normalize",
   "crates/prism-signal-source",
   "crates/prism-signal-source-telegram",
   "crates/prism-signal-collect",

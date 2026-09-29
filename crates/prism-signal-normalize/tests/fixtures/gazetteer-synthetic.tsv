@@ -1,0 +1,17 @@
+# Synthetic gazetteer for tests. Names are real place names as the channel spells them;
+# coordinates are placeholder round numbers, NOT real positions. Do not reuse as data.
+# id	name	lat	lon	feature	population	aliases
+test:kyiv	Kyiv	50	30	PPLC	3000000	Київ,Киев
+test:dnipro	Dnipro	48	35	PPLA	950000	Дніпро,Днепр
+test:odesa	Odesa	46	30	PPLA	1000000	Одеса,Одесса
+test:zaporizhzhia	Zaporizhzhia	47	35	PPLA	700000	Запоріжжя,Запорожье
+test:fastiv	Fastiv	50	29	PPLA2	45000	Фастів,Фастов
+test:hostomel	Hostomel	50	29	PPL	17000	Гостомель
+test:irpin	Irpin	50	29	PPLA2	65000	Ірпінь,Ирпень
+test:bucha	Bucha	50	29	PPLA2	37000	Буча
+test:zatoka	Zatoka	46	30	PPL	1500	Затока
+test:karolino	Karolino-Buhaz	46	30	PPL	3000	Кароліно-Бугаз,Каролино-Бугаз
+test:ovidiopol	Ovidiopol	46	30	PPLA2	11000	Овідіополь,Овидиополь
+test:konotop	Konotop	51	33	PPLA2	84000	Конотоп
+test:nizhyn	Nizhyn	51	31	PPLA2	67000	Ніжин,Нежин
+test:brovary	Brovary	50	30	PPLA2	109000	Бровари,Бровары
