@@ -49,7 +49,9 @@ Rules, in the order they apply:
 - Kinds come from `data/lexicon.v1.json`, in both languages, including the channel's slang: `реактивный мопед` is a jet drone. `каб` is exact-form only, because as a prefix it would match `кабинет` and `кабель`.
 - A generic `ракета` next to `баллистика` is the same threat named twice, so the generic kind is dropped.
 - `минус`, `відбій`, `отбой` call a threat off. `минус по мопедам` is `phase: cleared, kind: drone`. A bare `минус по всему на Маяки` is `cleared` with no kind and its places kept.
-- A weaker phrase (`больше не`, `не фиксируется`) also clears, but only a threat of a stated kind: `я больше не могу молчать` gives nothing.
+- Only those words do. Reports of some interceptions (`сбито`, `сбития`), of a target no longer tracked (`не фиксируется`), and of no further launches (`больше не было`) say nothing about what is still in the air, and the channel itself writes `не фиксируются, но тревога всё ещё активна`. Treating them as all-clears sent a false `відбій` on the sample, as did the news words `знищено` and `сбито`.
+- A negator directly before an all-clear word, or `нет`/`немає` within two words after it, voids it: `актуальна до отбоя тревоги` means the threat lasts until the all-clear, and `отбоя пока нет` says it has not come.
+- Multi-word all-clear phrases are supported (`cleared.phrases`) but the shipped lexicon has none. A phrase never clears a threat by itself: it needs a stated kind, because phrases such as `больше не` turn up in ordinary speech.
 - A sentence with a place but no kind of its own takes the kind of the nearest earlier threat sentence in the same post, but only on an explicit signal that it continues that threat. The reading says so in `kind_inherited`. Two signals count:
   - it refers back: it opens, in its first two words, with `эти`, `остальные`, `ещё`, `также` and the like (`эти летят на Кривой Рог`), or it carries the channel's noise idiom (`может быть громко в Николаеве`);
   - it is an item of a list: the earlier sentence is a header that names a kind but no place (`общая по мопедам:`) and this one opens with a number (`1 под Киевом`).
@@ -112,5 +114,5 @@ These numbers describe recall against one channel and one gazetteer, not correct
 1. Reading is a pure function of the post text and the vocabulary; nothing is remembered between posts.
 2. A word the gazetteer does not know is reported, never guessed.
 3. A region is never resolved to a city.
-4. A weak all-clear phrase never clears a threat by itself.
+4. Only explicit all-clear words end a threat; an interception, a lost track, or a phrase never does.
 5. This crate never sees who is subscribed or where they are.

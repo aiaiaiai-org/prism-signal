@@ -192,13 +192,57 @@ fn a_bare_all_clear_has_no_kind_and_keeps_its_places() {
 }
 
 #[test]
-fn a_weak_all_clear_phrase_needs_a_stated_kind() {
-    let cleared = read("повторных пусков КАБ больше не было");
+fn only_explicit_all_clear_words_end_a_threat() {
+    // No further launches, a target no longer tracked, some interceptions: each says nothing
+    // about what is still in the air, and a message saying "all clear" would be false comfort.
+    for text in [
+        "повторных пусков КАБ больше не было",
+        "ракета больше не фиксируется",
+        "все ракеты летят на Черкассы, есть уже первые сбития",
+        "часть мопедов сбита над Киевом",
+    ] {
+        assert!(
+            read(text).iter().all(|r| r.phase == Phase::Threat),
+            "{text}"
+        );
+    }
+}
+
+#[test]
+fn until_the_all_clear_is_not_the_all_clear() {
+    for text in [
+        "угроза баллистики с брянска актуальна до отбоя тревоги",
+        "угроза баллистики актуальна до відбою",
+        "баллистика на Киев, отбоя пока нет",
+        "баллистика на Киев, без отбоя",
+    ] {
+        let readings = read(text);
+        assert!(!readings.is_empty(), "{text}");
+        assert!(readings.iter().all(|r| r.phase == Phase::Threat), "{text}");
+    }
+    // The all-clear itself, in the same words, still counts.
+    assert_eq!(read("минус по баллистике")[0].phase, Phase::Cleared);
+    assert_eq!(read("по баллистике отбой")[0].phase, Phase::Cleared);
+}
+
+#[test]
+fn an_all_clear_phrase_is_supported_but_needs_a_stated_kind() {
+    // The shipped lexicon has no phrases; a custom one shows the rule they follow.
+    let mut lexicon: serde_json::Value =
+        serde_json::from_str(include_str!("../data/lexicon.v1.json")).unwrap();
+    lexicon["cleared"]["phrases"] = serde_json::json!(["больше не"]);
+    let custom = Normalizer::from_vocabulary(
+        prism_signal_normalize::Gazetteer::embedded().unwrap(),
+        &lexicon.to_string(),
+    )
+    .unwrap();
+
+    let cleared = custom.read(&post("повторных пусков КАБ больше не было"));
     assert_eq!(cleared.len(), 1);
     assert_eq!(cleared[0].phase, Phase::Cleared);
     assert_eq!(cleared[0].kind, Some(HazardKind::GuidedBomb));
-    assert!(read("я больше не могу молчать").is_empty());
-    assert!(read("ждём инфу, но больше не будет").is_empty());
+    // Without a kind, a weak phrase says nothing at all.
+    assert!(custom.read(&post("я больше не могу молчать")).is_empty());
 }
 
 #[test]
