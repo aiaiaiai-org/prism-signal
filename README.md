@@ -41,6 +41,8 @@ The runtime is stateless. The hub supplies the observation window with every req
 | [`geo cells`](docs/geo-cells.md) | H3 profile, polygon covering, cell fan-out without a subscriber registry |
 | [`two-way flows`](docs/flows.md) | Inbound evidence, outbound assessments, feedback, and the `0x1` bridge |
 | [`Telegram source`](docs/sources/telegram.md) | Public channel preview adapter and the collector |
+| [`normalization`](docs/normalization.md) | Post text to hazard readings, place roles, the gazetteer, measured coverage |
+| [`air-threat relay`](docs/air-alerts.md) | The first product: relay one channel's hazard reports by location; owners, gaps, open decisions |
 | [`protocol`](docs/protocol.md) | `prism-signal.v1` draft |
 | [`ecosystem`](docs/ecosystem.md) | Proposed rows for `prism/docs/ecosystem.md` and the dependency rules |
 | [`implementation status`](docs/status.md) | What exists now (nothing) and what is open |
@@ -55,15 +57,17 @@ The runtime is stateless. The hub supplies the observation window with every req
 | `prism-signal-observe` | Rule-based channel text to located observations, with a gazetteer |
 | `prism-signal-source` | Evidence source port |
 | `prism-signal-source-telegram` | Telegram public channel preview adapter |
+| `prism-signal-normalize` | Hazard readings from post text: kind, phase, and located places with roles |
 | `prism-signal-collect` | NDJSON collector CLI |
 
 ```bash
 cargo run -p prism-signal-collect -- telegram vanek_nikolaev backfill > vanek.ndjson
+cargo run -p prism-signal-normalize -- --actionable < vanek.ndjson
 ```
 
 ## Status
 
-Evidence is collected from Telegram public channels, normalized into located observations, and covered by H3 cells. Fusion and the protocol are still design. No license file exists yet. The intended license is Apache-2.0 to match `prism`; this is a proposal until the repository policy is added.
+Evidence collection from Telegram public channels, normalization of its text into hazard readings with located places (`prism-signal-normalize`) and into located observations (`prism-signal-observe`), and H3 covers of geometry. Fusion and the protocol are still design. No license file exists yet. The intended license is Apache-2.0 to match `prism`; this is a proposal until the repository policy is added.
 
 The bundled gazetteer `crates/prism-signal-observe/data/gazetteer-ua.tsv` is derived from [GeoNames](https://www.geonames.org) data, licensed [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
 

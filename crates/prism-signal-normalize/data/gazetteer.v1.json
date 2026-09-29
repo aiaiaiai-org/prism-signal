@@ -1,0 +1,1669 @@
+{
+ "version": "gazetteer.v1",
+ "attribution": "Coordinates and identifiers from GeoNames (https://www.geonames.org), licensed CC BY 4.0. Spellings and reach radii are curated by aiaiaiai.",
+ "places": [
+  {
+   "id": "geonames:703448",
+   "name": "Київ",
+   "lat": 50.4547,
+   "lon": 30.5238,
+   "reach_km": 20,
+   "match": {
+    "stems": [
+     "киев",
+     "київ"
+    ],
+    "max_suffix": 2
+   }
+  },
+  {
+   "id": "geonames:698740",
+   "name": "Одеса",
+   "lat": 46.4857,
+   "lon": 30.7438,
+   "reach_km": 20,
+   "match": {
+    "stems": [
+     "одес",
+     "одесс"
+    ],
+    "max_suffix": 2
+   }
+  },
+  {
+   "id": "geonames:700569",
+   "name": "Миколаїв",
+   "lat": 46.9763,
+   "lon": 31.993,
+   "reach_km": 20,
+   "match": {
+    "stems": [
+     "николаев",
+     "миколаїв",
+     "миколаєв"
+    ],
+    "not": [
+     "николаевка",
+     "миколаївка",
+     "миколаєвка"
+    ],
+    "max_suffix": 2
+   }
+  },
+  {
+   "id": "geonames:706448",
+   "name": "Херсон",
+   "lat": 46.6369,
+   "lon": 32.6146,
+   "reach_km": 20,
+   "match": {
+    "stems": [
+     "херсон"
+    ],
+    "max_suffix": 2
+   }
+  },
+  {
+   "id": "geonames:709930",
+   "name": "Дніпро",
+   "lat": 48.4666,
+   "lon": 35.0407,
+   "reach_km": 20,
+   "match": {
+    "stems": [
+     "днепр",
+     "дніпр",
+     "днепропетровск",
+     "дніпропетровськ"
+    ],
+    "max_suffix": 2
+   }
+  },
+  {
+   "id": "geonames:706483",
+   "name": "Харків",
+   "lat": 49.9818,
+   "lon": 36.2548,
+   "reach_km": 20,
+   "match": {
+    "stems": [
+     "харьков",
+     "харків",
+     "харков"
+    ],
+    "max_suffix": 2
+   }
+  },
+  {
+   "id": "geonames:687700",
+   "name": "Запоріжжя",
+   "lat": 47.8517,
+   "lon": 35.1171,
+   "reach_km": 20,
+   "match": {
+    "stems": [
+     "запорож",
+     "запоріж"
+    ],
+    "max_suffix": 3
+   }
+  },
+  {
+   "id": "geonames:702550",
+   "name": "Львів",
+   "lat": 49.8383,
+   "lon": 24.0232,
+   "reach_km": 20,
+   "match": {
+    "stems": [
+     "львов",
+     "львів"
+    ],
+    "max_suffix": 2
+   }
+  },
+  {
+   "id": "geonames:696643",
+   "name": "Полтава",
+   "lat": 49.5892,
+   "lon": 34.5537,
+   "reach_km": 20,
+   "match": {
+    "stems": [
+     "полтав"
+    ],
+    "max_suffix": 2
+   }
+  },
+  {
+   "id": "geonames:692194",
+   "name": "Суми",
+   "lat": 50.9174,
+   "lon": 34.7991,
+   "reach_km": 20,
+   "match": {
+    "forms": [
+     "сумы",
+     "суми",
+     "сумах",
+     "сумам",
+     "сумами"
+    ]
+   }
+  },
+  {
+   "id": "geonames:710735",
+   "name": "Чернігів",
+   "lat": 51.5054,
+   "lon": 31.2866,
+   "reach_km": 20,
+   "match": {
+    "stems": [
+     "чернигов",
+     "чернігів",
+     "чернігов"
+    ],
+    "max_suffix": 2
+   }
+  },
+  {
+   "id": "geonames:686967",
+   "name": "Житомир",
+   "lat": 50.2623,
+   "lon": 28.6791,
+   "reach_km": 20,
+   "match": {
+    "stems": [
+     "житомир"
+    ],
+    "max_suffix": 2
+   }
+  },
+  {
+   "id": "geonames:689558",
+   "name": "Вінниця",
+   "lat": 49.2322,
+   "lon": 28.4687,
+   "reach_km": 20,
+   "match": {
+    "stems": [
+     "винниц",
+     "вінниц"
+    ],
+    "max_suffix": 2
+   }
+  },
+  {
+   "id": "geonames:710791",
+   "name": "Черкаси",
+   "lat": 49.4445,
+   "lon": 32.0574,
+   "reach_km": 20,
+   "match": {
+    "stems": [
+     "черкас",
+     "черкасс"
+    ],
+    "max_suffix": 2
+   }
+  },
+  {
+   "id": "geonames:705812",
+   "name": "Кропивницький",
+   "lat": 48.5083,
+   "lon": 32.2662,
+   "reach_km": 20,
+   "match": {
+    "stems": [
+     "кропивницк",
+     "кропивницьк",
+     "кировоград",
+     "кіровоград"
+    ],
+    "max_suffix": 3
+   }
+  },
+  {
+   "id": "geonames:695594",
+   "name": "Рівне",
+   "lat": 50.6204,
+   "lon": 26.237,
+   "reach_km": 20,
+   "match": {
+    "forms": [
+     "ровно",
+     "ровне",
+     "рівне"
+    ],
+    "capitalized": true
+   }
+  },
+  {
+   "id": "geonames:702569",
+   "name": "Луцьк",
+   "lat": 50.7578,
+   "lon": 25.3502,
+   "reach_km": 20,
+   "match": {
+    "stems": [
+     "луцк",
+     "луцьк"
+    ],
+    "max_suffix": 2
+   }
+  },
+  {
+   "id": "geonames:691650",
+   "name": "Тернопіль",
+   "lat": 49.554,
+   "lon": 25.5907,
+   "reach_km": 20,
+   "match": {
+    "stems": [
+     "тернопол",
+     "тернопіл"
+    ],
+    "max_suffix": 2
+   }
+  },
+  {
+   "id": "geonames:706369",
+   "name": "Хмельницький",
+   "lat": 49.4183,
+   "lon": 26.9794,
+   "reach_km": 20,
+   "match": {
+    "stems": [
+     "хмельницк",
+     "хмельницьк"
+    ],
+    "max_suffix": 3
+   }
+  },
+  {
+   "id": "geonames:707471",
+   "name": "Івано-Франківськ",
+   "lat": 48.9231,
+   "lon": 24.7125,
+   "reach_km": 20,
+   "match": {
+    "stems": [
+     "ивано-франковск",
+     "івано-франківськ",
+     "франковск",
+     "франківськ"
+    ],
+    "max_suffix": 2
+   }
+  },
+  {
+   "id": "geonames:690548",
+   "name": "Ужгород",
+   "lat": 48.6242,
+   "lon": 22.2947,
+   "reach_km": 12,
+   "match": {
+    "stems": [
+     "ужгород"
+    ],
+    "max_suffix": 2
+   }
+  },
+  {
+   "id": "geonames:710719",
+   "name": "Чернівці",
+   "lat": 48.2904,
+   "lon": 25.9324,
+   "reach_km": 20,
+   "match": {
+    "stems": [
+     "черновц",
+     "чернівц"
+    ],
+    "max_suffix": 2
+   }
+  },
+  {
+   "id": "geonames:703845",
+   "name": "Кривий Ріг",
+   "lat": 47.9057,
+   "lon": 33.394,
+   "reach_km": 20,
+   "match": {
+    "stems": [
+     "крив рог",
+     "крив ріг",
+     "крив роз"
+    ],
+    "max_suffix": 3
+   }
+  },
+  {
+   "id": "geonames:709932",
+   "name": "Кам'янське",
+   "lat": 48.5172,
+   "lon": 34.6062,
+   "reach_km": 20,
+   "match": {
+    "stems": [
+     "каменск",
+     "кам'янськ",
+     "днепродзержинск",
+     "дніпродзержинськ"
+    ],
+    "not": [
+     "каменск-уральский",
+     "каменск-шахтинский"
+    ],
+    "max_suffix": 3
+   }
+  },
+  {
+   "id": "geonames:709248",
+   "name": "Фастів",
+   "lat": 50.078,
+   "lon": 29.9196,
+   "reach_km": 8,
+   "match": {
+    "stems": [
+     "фастов",
+     "фастів"
+    ],
+    "max_suffix": 2
+   }
+  },
+  {
+   "id": "geonames:708251",
+   "name": "Гостомель",
+   "lat": 50.5684,
+   "lon": 30.2651,
+   "reach_km": 8,
+   "match": {
+    "stems": [
+     "гостомел"
+    ],
+    "max_suffix": 2
+   }
+  },
+  {
+   "id": "geonames:707565",
+   "name": "Ірпінь",
+   "lat": 50.522,
+   "lon": 30.2404,
+   "reach_km": 12,
+   "match": {
+    "stems": [
+     "ирпен",
+     "ірпін",
+     "ірпен"
+    ],
+    "max_suffix": 2
+   }
+  },
+  {
+   "id": "geonames:711350",
+   "name": "Буча",
+   "lat": 50.5474,
+   "lon": 30.2088,
+   "reach_km": 8,
+   "match": {
+    "forms": [
+     "буча",
+     "бучи",
+     "буче",
+     "бучу",
+     "бучей",
+     "бучею"
+    ],
+    "capitalized": true
+   }
+  },
+  {
+   "id": "geonames:711390",
+   "name": "Бровари",
+   "lat": 50.511,
+   "lon": 30.7911,
+   "reach_km": 12,
+   "match": {
+    "stems": [
+     "бровар"
+    ],
+    "max_suffix": 2
+   }
+  },
+  {
+   "id": "geonames:711660",
+   "name": "Бориспіль",
+   "lat": 50.3505,
+   "lon": 30.9526,
+   "reach_km": 12,
+   "match": {
+    "stems": [
+     "бориспол",
+     "бориспіл"
+    ],
+    "max_suffix": 2
+   }
+  },
+  {
+   "id": "geonames:712165",
+   "name": "Біла Церква",
+   "lat": 49.7994,
+   "lon": 30.1165,
+   "reach_km": 20,
+   "match": {
+    "stems": [
+     "бел церк",
+     "біл церк"
+    ],
+    "max_suffix": 3
+   }
+  },
+  {
+   "id": "geonames:688723",
+   "name": "Вишгород",
+   "lat": 50.5831,
+   "lon": 30.4857,
+   "reach_km": 8,
+   "match": {
+    "stems": [
+     "вышгород",
+     "вишгород"
+    ],
+    "max_suffix": 2
+   }
+  },
+  {
+   "id": "geonames:690412",
+   "name": "Васильків",
+   "lat": 50.1802,
+   "lon": 30.3119,
+   "reach_km": 8,
+   "match": {
+    "stems": [
+     "васильков",
+     "васильків"
+    ],
+    "max_suffix": 2
+   }
+  },
+  {
+   "id": "geonames:688597",
+   "name": "Ягодин",
+   "lat": 51.2,
+   "lon": 23.9167,
+   "reach_km": 5,
+   "match": {
+    "stems": [
+     "ягодин"
+    ],
+    "max_suffix": 2
+   }
+  },
+  {
+   "id": "geonames:687557",
+   "name": "Затока",
+   "lat": 46.0702,
+   "lon": 30.4627,
+   "reach_km": 5,
+   "match": {
+    "stems": [
+     "заток"
+    ],
+    "max_suffix": 2,
+    "capitalized": true
+   }
+  },
+  {
+   "id": "geonames:687556",
+   "name": "Кароліно-Бугаз",
+   "lat": 46.1444,
+   "lon": 30.5307,
+   "reach_km": 5,
+   "match": {
+    "stems": [
+     "каролино-бугаз",
+     "кароліно-бугаз"
+    ],
+    "max_suffix": 2
+   }
+  },
+  {
+   "id": "geonames:698138",
+   "name": "Овідіополь",
+   "lat": 46.2472,
+   "lon": 30.4375,
+   "reach_km": 8,
+   "match": {
+    "stems": [
+     "овидиопол",
+     "овідіопол"
+    ],
+    "max_suffix": 2
+   }
+  },
+  {
+   "id": "geonames:707688",
+   "name": "Чорноморськ",
+   "lat": 46.2991,
+   "lon": 30.6553,
+   "reach_km": 12,
+   "match": {
+    "stems": [
+     "черноморск",
+     "чорноморськ"
+    ],
+    "not": [
+     "черноморское",
+     "чорноморське"
+    ],
+    "max_suffix": 3
+   }
+  },
+  {
+   "id": "geonames:688860",
+   "name": "Вознесенськ",
+   "lat": 47.5622,
+   "lon": 31.336,
+   "reach_km": 8,
+   "match": {
+    "stems": [
+     "вознесенск",
+     "вознесенськ"
+    ],
+    "max_suffix": 3
+   }
+  },
+  {
+   "id": "geonames:698770",
+   "name": "Очаків",
+   "lat": 46.6147,
+   "lon": 31.545,
+   "reach_km": 8,
+   "match": {
+    "stems": [
+     "очаков",
+     "очаків"
+    ],
+    "max_suffix": 2
+   }
+  },
+  {
+   "id": "geonames:697593",
+   "name": "Первомайськ",
+   "lat": 48.0448,
+   "lon": 30.8478,
+   "reach_km": 12,
+   "match": {
+    "stems": [
+     "первомайск",
+     "первомайськ"
+    ],
+    "not": [
+     "первомайское",
+     "первомайське",
+     "первомайский",
+     "первомайський"
+    ],
+    "max_suffix": 3
+   }
+  },
+  {
+   "id": "geonames:7525990",
+   "name": "Південноукраїнськ",
+   "lat": 47.8288,
+   "lon": 31.1751,
+   "reach_km": 8,
+   "match": {
+    "stems": [
+     "южноукраинск",
+     "пивденноукраїнськ",
+     "південноукраїнськ"
+    ],
+    "max_suffix": 2
+   }
+  },
+  {
+   "id": "geonames:707308",
+   "name": "Ізмаїл",
+   "lat": 45.3506,
+   "lon": 28.8375,
+   "reach_km": 12,
+   "match": {
+    "stems": [
+     "измаил",
+     "ізмаїл"
+    ],
+    "max_suffix": 2
+   }
+  },
+  {
+   "id": "geonames:12129128",
+   "name": "Рені",
+   "lat": 45.4542,
+   "lon": 28.2773,
+   "reach_km": 8,
+   "match": {
+    "forms": [
+     "рени",
+     "рені"
+    ]
+   }
+  },
+  {
+   "id": "geonames:712160",
+   "name": "Білгород-Дністровський",
+   "lat": 46.1948,
+   "lon": 30.3483,
+   "reach_km": 8,
+   "match": {
+    "stems": [
+     "белгород-днестровск",
+     "білгород-дністровськ"
+    ],
+    "max_suffix": 3
+   }
+  },
+  {
+   "id": "geonames:704147",
+   "name": "Кременчук",
+   "lat": 49.0625,
+   "lon": 33.4048,
+   "reach_km": 20,
+   "match": {
+    "stems": [
+     "кременчуг",
+     "кременчук",
+     "кременчуц"
+    ],
+    "max_suffix": 2
+   }
+  },
+  {
+   "id": "geonames:701075",
+   "name": "Миргород",
+   "lat": 49.9646,
+   "lon": 33.6086,
+   "reach_km": 8,
+   "match": {
+    "stems": [
+     "миргород"
+    ],
+    "max_suffix": 2
+   }
+  },
+  {
+   "id": "geonames:702723",
+   "name": "Лубни",
+   "lat": 50.0141,
+   "lon": 32.9997,
+   "reach_km": 8,
+   "match": {
+    "stems": [
+     "лубн"
+    ],
+    "max_suffix": 2
+   }
+  },
+  {
+   "id": "geonames:705135",
+   "name": "Конотоп",
+   "lat": 51.2325,
+   "lon": 33.2004,
+   "reach_km": 12,
+   "match": {
+    "stems": [
+     "конотоп"
+    ],
+    "max_suffix": 2
+   }
+  },
+  {
+   "id": "geonames:699942",
+   "name": "Ніжин",
+   "lat": 51.0477,
+   "lon": 31.8884,
+   "reach_km": 12,
+   "match": {
+    "stems": [
+     "нежин",
+     "ніжин"
+    ],
+    "max_suffix": 2
+   }
+  },
+  {
+   "id": "geonames:693942",
+   "name": "Шостка",
+   "lat": 51.8643,
+   "lon": 33.4728,
+   "reach_km": 12,
+   "match": {
+    "stems": [
+     "шостк"
+    ],
+    "max_suffix": 2
+   }
+  },
+  {
+   "id": "geonames:713749",
+   "name": "Охтирка",
+   "lat": 50.3085,
+   "lon": 34.8947,
+   "reach_km": 8,
+   "match": {
+    "stems": [
+     "ахтырк",
+     "охтирк"
+    ],
+    "max_suffix": 2
+   }
+  },
+  {
+   "id": "geonames:695464",
+   "name": "Ромни",
+   "lat": 50.7403,
+   "lon": 33.4952,
+   "reach_km": 8,
+   "match": {
+    "stems": [
+     "ромн"
+    ],
+    "max_suffix": 2
+   }
+  },
+  {
+   "id": "geonames:697889",
+   "name": "Павлоград",
+   "lat": 48.5321,
+   "lon": 35.8688,
+   "reach_km": 12,
+   "match": {
+    "stems": [
+     "павлоград"
+    ],
+    "max_suffix": 2
+   }
+  },
+  {
+   "id": "geonames:700051",
+   "name": "Нікополь",
+   "lat": 47.5683,
+   "lon": 34.3913,
+   "reach_km": 12,
+   "match": {
+    "stems": [
+     "никопол",
+     "нікопол"
+    ],
+    "max_suffix": 2
+   }
+  },
+  {
+   "id": "geonames:701855",
+   "name": "Марганець",
+   "lat": 47.6309,
+   "lon": 34.6245,
+   "reach_km": 8,
+   "match": {
+    "stems": [
+     "марган"
+    ],
+    "max_suffix": 3
+   }
+  },
+  {
+   "id": "geonames:690688",
+   "name": "Умань",
+   "lat": 48.7501,
+   "lon": 30.2194,
+   "reach_km": 12,
+   "match": {
+    "stems": [
+     "уман"
+    ],
+    "max_suffix": 2
+   }
+  },
+  {
+   "id": "geonames:712441",
+   "name": "Бердичів",
+   "lat": 49.8942,
+   "lon": 28.5824,
+   "reach_km": 12,
+   "match": {
+    "stems": [
+     "бердичев",
+     "бердичів"
+    ],
+    "max_suffix": 2
+   }
+  },
+  {
+   "id": "geonames:704901",
+   "name": "Коростень",
+   "lat": 50.9512,
+   "lon": 28.6386,
+   "reach_km": 12,
+   "match": {
+    "stems": [
+     "коростен"
+    ],
+    "max_suffix": 2
+   }
+  },
+  {
+   "id": "geonames:704617",
+   "name": "Ковель",
+   "lat": 51.2155,
+   "lon": 24.7008,
+   "reach_km": 12,
+   "match": {
+    "stems": [
+     "ковел"
+    ],
+    "max_suffix": 2
+   }
+  },
+  {
+   "id": "geonames:700646",
+   "name": "Мукачево",
+   "lat": 48.4425,
+   "lon": 22.718,
+   "reach_km": 12,
+   "match": {
+    "stems": [
+     "мукачев"
+    ],
+    "max_suffix": 2
+   }
+  },
+  {
+   "id": "geonames:692372",
+   "name": "Стрий",
+   "lat": 49.261,
+   "lon": 23.8484,
+   "reach_km": 12,
+   "match": {
+    "forms": [
+     "стрий",
+     "стрый",
+     "стрия",
+     "стрыя",
+     "стрию",
+     "стрыю",
+     "стрые"
+    ]
+   }
+  },
+  {
+   "id": "geonames:709611",
+   "name": "Дрогобич",
+   "lat": 49.352,
+   "lon": 23.5112,
+   "reach_km": 12,
+   "match": {
+    "stems": [
+     "дрогобыч",
+     "дрогобич"
+    ],
+    "max_suffix": 2
+   }
+  },
+  {
+   "id": "geonames:705392",
+   "name": "Коломия",
+   "lat": 48.525,
+   "lon": 25.0371,
+   "reach_km": 12,
+   "match": {
+    "stems": [
+     "коломы",
+     "коломи"
+    ],
+    "max_suffix": 2
+   }
+  },
+  {
+   "id": "geonames:706950",
+   "name": "Кам'янець-Подільський",
+   "lat": 48.6788,
+   "lon": 26.5852,
+   "reach_km": 12,
+   "match": {
+    "stems": [
+     "каменец-подольск",
+     "каменца-подольск",
+     "каменце-подольск",
+     "кам'янець-подільськ",
+     "кам'янця-подільськ",
+     "кам'янці-подільськ"
+    ],
+    "max_suffix": 3
+   }
+  },
+  {
+   "id": "geonames:694216",
+   "name": "Шепетівка",
+   "lat": 50.1812,
+   "lon": 27.0652,
+   "reach_km": 8,
+   "match": {
+    "stems": [
+     "шепетовк",
+     "шепетівк"
+    ],
+    "max_suffix": 2
+   }
+  },
+  {
+   "id": "geonames:703656",
+   "name": "Куп'янськ",
+   "lat": 49.71,
+   "lon": 37.6158,
+   "reach_km": 8,
+   "match": {
+    "stems": [
+     "купянск",
+     "куп'янськ"
+    ],
+    "max_suffix": 2
+   }
+  },
+  {
+   "id": "geonames:707292",
+   "name": "Ізюм",
+   "lat": 49.207,
+   "lon": 37.2768,
+   "reach_km": 8,
+   "match": {
+    "stems": [
+     "изюм",
+     "ізюм"
+    ],
+    "max_suffix": 2,
+    "capitalized": true
+   }
+  },
+  {
+   "id": "geonames:710374",
+   "name": "Чугуїв",
+   "lat": 49.8354,
+   "lon": 36.6865,
+   "reach_km": 8,
+   "match": {
+    "stems": [
+     "чугуев",
+     "чугуїв"
+    ],
+    "max_suffix": 2
+   }
+  },
+  {
+   "id": "geonames:712926",
+   "name": "Балаклія",
+   "lat": 49.456,
+   "lon": 36.8443,
+   "reach_km": 8,
+   "match": {
+    "stems": [
+     "балакле",
+     "балаклі"
+    ],
+    "max_suffix": 2
+   }
+  },
+  {
+   "id": "geonames:702760",
+   "name": "Лозова",
+   "lat": 48.8907,
+   "lon": 36.3141,
+   "reach_km": 12,
+   "match": {
+    "stems": [
+     "лозов"
+    ],
+    "max_suffix": 2,
+    "capitalized": true
+   }
+  },
+  {
+   "id": "geonames:698428",
+   "name": "Оріхів",
+   "lat": 47.5761,
+   "lon": 35.7833,
+   "reach_km": 8,
+   "match": {
+    "stems": [
+     "орехов",
+     "оріхів"
+    ],
+    "max_suffix": 2,
+    "capitalized": true
+   }
+  },
+  {
+   "id": "geonames:704508",
+   "name": "Краматорськ",
+   "lat": 48.7311,
+   "lon": 37.5678,
+   "reach_km": 12,
+   "match": {
+    "stems": [
+     "краматорск",
+     "краматорськ"
+    ],
+    "max_suffix": 3
+   }
+  },
+  {
+   "id": "geonames:693468",
+   "name": "Слов'янськ",
+   "lat": 48.8497,
+   "lon": 37.5974,
+   "reach_km": 12,
+   "match": {
+    "stems": [
+     "славянск",
+     "слов'янськ"
+    ],
+    "max_suffix": 3
+   }
+  },
+  {
+   "id": "geonames:704422",
+   "name": "Покровськ",
+   "lat": 48.2801,
+   "lon": 37.1771,
+   "reach_km": 12,
+   "match": {
+    "stems": [
+     "покровск",
+     "покровськ"
+    ],
+    "not": [
+     "покровское",
+     "покровське",
+     "покровский",
+     "покровський"
+    ],
+    "max_suffix": 3
+   }
+  },
+  {
+   "id": "geonames:705104",
+   "name": "Костянтинівка",
+   "lat": 48.5273,
+   "lon": 37.7059,
+   "reach_km": 12,
+   "match": {
+    "stems": [
+     "константиновк",
+     "костянтинівк"
+    ],
+    "max_suffix": 2
+   }
+  },
+  {
+   "id": "geonames:616743",
+   "name": "Дружківка",
+   "lat": 48.62,
+   "lon": 37.5254,
+   "reach_km": 12,
+   "match": {
+    "stems": [
+     "дружковк",
+     "дружківк"
+    ],
+    "max_suffix": 2
+   }
+  },
+  {
+   "id": "geonames:9983712",
+   "name": "Авангард",
+   "lat": 46.4687,
+   "lon": 30.6155,
+   "reach_km": 5,
+   "match": {
+    "stems": [
+     "авангард"
+    ],
+    "max_suffix": 2,
+    "capitalized": true
+   }
+  },
+  {
+   "id": "geonames:709114",
+   "name": "Фонтанка",
+   "lat": 46.5686,
+   "lon": 30.8592,
+   "reach_km": 5,
+   "match": {
+    "stems": [
+     "фонтанк"
+    ],
+    "max_suffix": 2,
+    "capitalized": true
+   }
+  },
+  {
+   "id": "geonames:699839",
+   "name": "Нова Каховка",
+   "lat": 46.7597,
+   "lon": 33.3559,
+   "reach_km": 8,
+   "match": {
+    "stems": [
+     "нов каховк"
+    ],
+    "max_suffix": 3
+   }
+  },
+  {
+   "id": "geonames:698953",
+   "name": "Новий Буг",
+   "lat": 47.6906,
+   "lon": 32.5121,
+   "reach_km": 8,
+   "match": {
+    "stems": [
+     "нов буг"
+    ],
+    "max_suffix": 3
+   }
+  },
+  {
+   "id": "geonames:713163",
+   "name": "Арциз",
+   "lat": 45.9853,
+   "lon": 29.4329,
+   "reach_km": 8,
+   "match": {
+    "stems": [
+     "арциз"
+    ],
+    "max_suffix": 2
+   }
+  },
+  {
+   "id": "geonames:691803",
+   "name": "Татарбунари",
+   "lat": 45.8386,
+   "lon": 29.6112,
+   "reach_km": 8,
+   "match": {
+    "stems": [
+     "татарбунар"
+    ],
+    "max_suffix": 2
+   }
+  },
+  {
+   "id": "geonames:688750",
+   "name": "Вилкове",
+   "lat": 45.4028,
+   "lon": 29.5869,
+   "reach_km": 5,
+   "match": {
+    "stems": [
+     "вилков"
+    ],
+    "max_suffix": 2
+   }
+  },
+  {
+   "id": "geonames:695344",
+   "name": "Роздільна",
+   "lat": 46.8548,
+   "lon": 30.0709,
+   "reach_km": 8,
+   "match": {
+    "stems": [
+     "раздельн",
+     "роздільн"
+    ],
+    "max_suffix": 3,
+    "capitalized": true
+   }
+  },
+  {
+   "id": "geonames:713500",
+   "name": "Ананьїв",
+   "lat": 47.7197,
+   "lon": 29.9571,
+   "reach_km": 5,
+   "match": {
+    "stems": [
+     "ананьев",
+     "ананьїв"
+    ],
+    "max_suffix": 2
+   }
+  },
+  {
+   "id": "geonames:705540",
+   "name": "Коблеве",
+   "lat": 46.665,
+   "lon": 31.208,
+   "reach_km": 5,
+   "match": {
+    "stems": [
+     "коблев"
+    ],
+    "max_suffix": 2
+   }
+  },
+  {
+   "id": "geonames:712775",
+   "name": "Баштанка",
+   "lat": 47.4053,
+   "lon": 32.4344,
+   "reach_km": 8,
+   "match": {
+    "stems": [
+     "баштанк"
+    ],
+    "max_suffix": 2
+   }
+  },
+  {
+   "id": "geonames:701561",
+   "name": "Маяки",
+   "lat": 46.4125,
+   "lon": 30.2672,
+   "reach_km": 5,
+   "match": {
+    "stems": [
+     "маяк"
+    ],
+    "max_suffix": 2,
+    "capitalized": true
+   }
+  },
+  {
+   "id": "geonames:712488",
+   "name": "Біляївка",
+   "lat": 46.4843,
+   "lon": 30.2089,
+   "reach_km": 8,
+   "match": {
+    "stems": [
+     "беляевк",
+     "біляївк"
+    ],
+    "max_suffix": 2
+   }
+  },
+  {
+   "id": "geonames:690648",
+   "name": "Усатове",
+   "lat": 46.5289,
+   "lon": 30.6495,
+   "reach_km": 5,
+   "match": {
+    "stems": [
+     "усатов"
+    ],
+    "max_suffix": 2
+   }
+  },
+  {
+   "id": "geonames:713112",
+   "name": "Августівка",
+   "lat": 46.6399,
+   "lon": 30.6489,
+   "reach_km": 5,
+   "match": {
+    "stems": [
+     "августовк",
+     "августівк"
+    ],
+    "max_suffix": 2
+   }
+  },
+  {
+   "id": "geonames:707756",
+   "name": "Дачне",
+   "lat": 46.5823,
+   "lon": 30.5475,
+   "reach_km": 5,
+   "match": {
+    "stems": [
+     "дачн"
+    ],
+    "max_suffix": 3,
+    "capitalized": true
+   }
+  },
+  {
+   "id": "geonames:705222",
+   "name": "Доброслав",
+   "lat": 46.821,
+   "lon": 30.9452,
+   "reach_km": 5,
+   "match": {
+    "stems": [
+     "доброслав"
+    ],
+    "max_suffix": 2
+   }
+  },
+  {
+   "id": "geonames:692819",
+   "name": "Старокозаче",
+   "lat": 46.3358,
+   "lon": 29.9888,
+   "reach_km": 5,
+   "match": {
+    "stems": [
+     "старокозач"
+    ],
+    "max_suffix": 3
+   }
+  },
+  {
+   "id": "geonames:700292",
+   "name": "Нерубайське",
+   "lat": 46.5444,
+   "lon": 30.6292,
+   "reach_km": 5,
+   "match": {
+    "stems": [
+     "нерубайск",
+     "нерубайськ"
+    ],
+    "max_suffix": 3
+   }
+  },
+  {
+   "id": "geonames:690189",
+   "name": "Великий Дальник",
+   "lat": 46.4721,
+   "lon": 30.5629,
+   "reach_km": 5,
+   "match": {
+    "stems": [
+     "велик дальник"
+    ],
+    "max_suffix": 3
+   }
+  },
+  {
+   "id": "geonames:703844",
+   "name": "Крижанівка",
+   "lat": 46.5628,
+   "lon": 30.795,
+   "reach_km": 5,
+   "match": {
+    "stems": [
+     "крыжановк",
+     "крижанівк"
+    ],
+    "max_suffix": 2
+   }
+  },
+  {
+   "id": "geonames:709022",
+   "name": "Галицинове",
+   "lat": 46.8004,
+   "lon": 31.9513,
+   "reach_km": 5,
+   "match": {
+    "stems": [
+     "галицинов"
+    ],
+    "max_suffix": 2
+   }
+  },
+  {
+   "id": "geonames:701327",
+   "name": "Мішково-Погорілове",
+   "lat": 46.9946,
+   "lon": 32.1099,
+   "reach_km": 5,
+   "match": {
+    "stems": [
+     "мешково-погорелов",
+     "мішково-погорілов"
+    ],
+    "max_suffix": 2
+   }
+  },
+  {
+   "id": "geonames:691313",
+   "name": "Трихати",
+   "lat": 47.1399,
+   "lon": 31.8208,
+   "reach_km": 5,
+   "match": {
+    "stems": [
+     "трихат"
+    ],
+    "max_suffix": 2
+   }
+  },
+  {
+   "id": "geonames:13631374",
+   "name": "Кульбакине",
+   "lat": 46.9147,
+   "lon": 32.0797,
+   "reach_km": 5,
+   "match": {
+    "stems": [
+     "кульбакин"
+    ],
+    "max_suffix": 2
+   }
+  },
+  {
+   "id": "geonames:695895",
+   "name": "Радісний Сад",
+   "lat": 46.9009,
+   "lon": 31.9884,
+   "reach_km": 5,
+   "match": {
+    "stems": [
+     "радсад",
+     "радисн сад"
+    ],
+    "max_suffix": 3
+   }
+  },
+  {
+   "id": "geonames:712508",
+   "name": "Білозерка",
+   "lat": 46.6265,
+   "lon": 32.4445,
+   "reach_km": 5,
+   "match": {
+    "stems": [
+     "белозерк",
+     "білозерк"
+    ],
+    "max_suffix": 2
+   }
+  },
+  {
+   "id": "geonames:710715",
+   "name": "Чорнобаївка",
+   "lat": 46.6964,
+   "lon": 32.5451,
+   "reach_km": 5,
+   "match": {
+    "stems": [
+     "чернобаевк",
+     "чорнобаївк"
+    ],
+    "max_suffix": 2
+   }
+  },
+  {
+   "id": "geonames:692944",
+   "name": "Станислав",
+   "lat": 46.5733,
+   "lon": 32.1477,
+   "reach_km": 5,
+   "match": {
+    "stems": [
+     "станислав",
+     "станіслав"
+    ],
+    "max_suffix": 2,
+    "capitalized": true
+   }
+  },
+  {
+   "id": "geonames:696464",
+   "name": "Посад-Покровське",
+   "lat": 46.8052,
+   "lon": 32.2632,
+   "reach_km": 5,
+   "match": {
+    "stems": [
+     "посад-покровск",
+     "посад-покровськ"
+    ],
+    "max_suffix": 3
+   }
+  },
+  {
+   "id": "geonames:696367",
+   "name": "Правдине",
+   "lat": 46.7379,
+   "lon": 32.2037,
+   "reach_km": 5,
+   "match": {
+    "stems": [
+     "правдин"
+    ],
+    "max_suffix": 2,
+    "capitalized": true
+   }
+  },
+  {
+   "id": "geonames:698782",
+   "name": "Обухів",
+   "lat": 50.1163,
+   "lon": 30.6333,
+   "reach_km": 8,
+   "match": {
+    "stems": [
+     "обухов",
+     "обухів"
+    ],
+    "max_suffix": 2
+   }
+  },
+  {
+   "id": "geonames:690773",
+   "name": "Українка",
+   "lat": 50.1432,
+   "lon": 30.7461,
+   "reach_km": 8,
+   "match": {
+    "stems": [
+     "украинк",
+     "українк"
+    ],
+    "max_suffix": 2,
+    "capitalized": true
+   }
+  },
+  {
+   "id": "geonames:711515",
+   "name": "Боярка",
+   "lat": 50.3191,
+   "lon": 30.2973,
+   "reach_km": 8,
+   "match": {
+    "stems": [
+     "боярк"
+    ],
+    "max_suffix": 2,
+    "capitalized": true
+   }
+  },
+  {
+   "id": "geonames:689487",
+   "name": "Вишневе",
+   "lat": 50.3883,
+   "lon": 30.3681,
+   "reach_km": 8,
+   "match": {
+    "stems": [
+     "вишнев"
+    ],
+    "max_suffix": 3,
+    "capitalized": true
+   }
+  },
+  {
+   "id": "geonames:696108",
+   "name": "Прилуки",
+   "lat": 50.5953,
+   "lon": 32.3838,
+   "reach_km": 12,
+   "match": {
+    "stems": [
+     "прилук"
+    ],
+    "max_suffix": 2
+   }
+  },
+  {
+   "id": "geonames:6930327",
+   "name": "Славутич",
+   "lat": 51.5225,
+   "lon": 30.7181,
+   "reach_km": 8,
+   "match": {
+    "stems": [
+     "славутич"
+    ],
+    "max_suffix": 2
+   }
+  },
+  {
+   "id": "geonames:691255",
+   "name": "Тростянець",
+   "lat": 50.4848,
+   "lon": 34.9657,
+   "reach_km": 8,
+   "match": {
+    "stems": [
+     "тростянец",
+     "тростянц",
+     "тростянець"
+    ],
+    "max_suffix": 2
+   }
+  },
+  {
+   "id": "geonames:709054",
+   "name": "Гадяч",
+   "lat": 50.3691,
+   "lon": 33.997,
+   "reach_km": 8,
+   "match": {
+    "stems": [
+     "гадяч"
+    ],
+    "max_suffix": 2
+   }
+  },
+  {
+   "id": "geonames:689584",
+   "name": "Вільнянськ",
+   "lat": 47.9477,
+   "lon": 35.4403,
+   "reach_km": 8,
+   "match": {
+    "stems": [
+     "вольнянск",
+     "вільнянськ"
+    ],
+    "max_suffix": 2
+   }
+  }
+ ]
+}
