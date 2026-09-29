@@ -15,7 +15,10 @@
       "Bash(git push -u origin *)",
       "Bash(git push origin *)"
     ],
-    "deny": ["Bash(git push --force *)", "Bash(git push -f *)"]
+    "deny": [
+      "Bash(git push --force *)",
+      "Bash(git push -f *)"
+    ]
   },
   "hooks": {
     "SessionStart": [
@@ -28,5 +31,10 @@
         ]
       }
     ]
+  },
+  "attribution": {
+    "commit": "",
+    "pr": "",
+    "sessionUrl": false
   }
 }
