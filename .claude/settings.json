@@ -15,7 +15,22 @@
       "Bash(git push -u origin *)",
       "Bash(git push origin *)"
     ],
-    "deny": ["Bash(git push --force *)", "Bash(git push -f *)"]
+    "deny": [
+      "Bash(git push --force *)",
+      "Bash(git push -f *)"
+    ]
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/ssh-signing.sh"
+          }
+        ]
+      }
+    ]
   },
   "attribution": {
     "commit": "",
