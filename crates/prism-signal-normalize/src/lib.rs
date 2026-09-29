@@ -74,7 +74,8 @@ impl Default for NormalizeRules {
     }
 }
 
-/// Why a line or item produced no observation.
+/// Why a line or item produced no observation. In `docs/normalization.md` these appear as
+/// `forwarded`, `unlocated`, and `ambiguous_place`.
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum SkipReason {
     /// The item was forwarded from another author; it is not this source's own report.

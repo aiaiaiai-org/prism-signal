@@ -50,7 +50,9 @@ The runtime is stateless. The hub supplies the observation window with every req
 
 | Package | Owns |
 | --- | --- |
-| `prism-signal-core` | Source-neutral evidence values |
+| `prism-signal-core` | Source-neutral evidence and located observation values |
+| `prism-signal-geo` | Deterministic, bounded H3 covers of observation geometry |
+| `prism-signal-normalize` | Rule-based channel text to located observations, with a gazetteer |
 | `prism-signal-source` | Evidence source port |
 | `prism-signal-source-telegram` | Telegram public channel preview adapter |
 | `prism-signal-collect` | NDJSON collector CLI |
