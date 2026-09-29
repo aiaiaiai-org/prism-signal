@@ -60,14 +60,15 @@ pub(crate) fn tokenize(line: &str) -> Vec<Token> {
     let mut current = String::new();
     let mut clause = 0;
     let mut flush = |current: &mut String, clause: &mut usize| {
-        let word = current.trim_matches('-');
+        // Hyphens and quote marks around a word are not part of it: `'Киев'` is `Киев`.
+        let word = current.trim_matches(|c| c == '-' || is_apostrophe(c));
         if !word.is_empty() {
             tokens.push(Token {
                 raw: word.to_owned(),
                 norm: normalize_word(word),
                 clause: *clause,
             });
-        } else if !current.is_empty() {
+        } else if !current.is_empty() && current.chars().all(|c| c == '-') {
             *clause += 1;
         }
         current.clear();
@@ -150,6 +151,19 @@ mod tests {
                 ("Каролино-Бугаз".to_owned(), 3),
             ]
         );
+    }
+
+    #[test]
+    fn quote_marks_around_a_word_are_not_part_of_it() {
+        let tokens = tokenize("шахед 'Киев' ’Одесса’ ` мопед");
+        let words: Vec<_> = tokens.iter().map(|t| t.raw.as_str()).collect();
+        assert_eq!(words, ["шахед", "Киев", "Одесса", "мопед"]);
+        assert!(tokens[1].is_capitalized() && tokens[2].is_capitalized());
+        assert!(
+            tokens.iter().all(|t| t.clause == 0),
+            "a lone quote is not a clause break"
+        );
+        assert_eq!(tokenize("Кам’янське")[0].raw, "Кам’янське");
     }
 
     #[test]

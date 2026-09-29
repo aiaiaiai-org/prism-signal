@@ -17,7 +17,7 @@ A mention with no place in its span yields nothing and is reported as unlocated.
 | --- | --- |
 | `kind` | lexicon match (see below) |
 | `stance` | `clear` when a clear word covers the mention's clause, otherwise `threat` (see below) |
-| `count` | a number up to two words before the kind word in the same clause, if any |
+| `count` | a number up to two words before the kind word in the same clause, if any, unless a unit of time or distance follows it (`через 5 минут`, `за 15 км`). The count belongs to its clause: `2 шахеда на Одессу, 3 шахеда на Киев` gives Odesa 2 and Kyiv 3 |
 | `observed_at` | `Evidence.published_at` |
 | `geometry` | the gazetteer position of the place, as a point |
 | `ttl` | `NormalizeRules`, per kind for threats and one value for clear |
@@ -34,9 +34,11 @@ Nothing is guessed. These cases yield no observation and are reported in `Normal
 
 ## Lexicon
 
-| Kind | Words (prefix match on the lowercase form) |
+A word matches when its lowercase form is one of the stems below followed by a case ending or nothing (`шахед`, `шахеды`, `шахедов`), or by a hyphenated designation (`Герань-2`, `Оникс-М`). Adjective stems (`крылат-`, `баллистическ-`) take adjective endings. A bare prefix would take place names and ordinary words for hazards: `Дронівка` and `ракетный` are not hazard words.
+
+| Kind | Stems |
 | --- | --- |
-| `air.ballistic_missile` | баллист-, балліст-, іскандер-/искандер-, кинжал-/кинджал- |
+| `air.ballistic_missile` | баллист-, баллистик-, баліст-, балістик-, баллистическ-, балістичн-, іскандер-/искандер-, кинжал-/кинджал- |
 | `air.missile` | ракет-, крылат-/крилат-, калибр-/калібр-, циркон-, оникс-/онікс-, х-101/х-22/х-59/х-69 |
 | `air.attack_drone` | шахед-/шахід-, мопед-, бандерол-, бпла, дрон-, герань/герані |
 | `air.jet_drone` | an attack-drone word in a line that also contains реактивн- |
@@ -49,12 +51,15 @@ The scope of a clear word is its own clause:
 | Line | Reading |
 | --- | --- |
 | `минус по мопеду над Одессой, 2 баллистики на Киев` | the drone at Odesa is clear; the ballistic missiles at Kyiv are a threat |
-| `мопеды над Николаевом - минус` | the clear clause names no kind, so it clears the nearest earlier clause that does |
+| `мопеды над Николаевом - минус` | the clear clause names no kind, so it clears the clause right before it, which does |
 | `минус, 2 шахеда на Одессу` | a clear word never reaches forward, so this is a threat |
+| `Шахеды на Киев, Одесса - минус` | the clause before the minus names no kind, so the minus clears nothing and both stay threats |
+
+A kindless clear reaches back exactly one clause. A missed clear leaves a threat to expire on its TTL; a clear applied to the wrong place would hide a live threat.
 
 `реактивн-` makes an attack drone a jet drone only within its own clause.
 
-When a line names a ballistic missile, a generic `ракета` with the same stance in that line is not counted separately.
+A generic `ракета` is not counted separately when it only restates a ballistic missile with the same stance: in the same clause (`баллистика и ракеты на Киев`), or in a clause with no place of its own (`баллистика на Запорожье! 2 ракеты`). With a place of its own (`баллистика на Киев, 2 ракеты на Одессу`) it is a separate `air.missile` mention.
 
 ## Gazetteer
 
@@ -82,7 +87,8 @@ Lookup rules:
 - A name must start with a capitalized word. This keeps common nouns that are also village names out.
 - One case ending is removed before names are compared, so `Киеву`, `Одессы`, and `Гостомеля` match `Киев`, `Одесса`, and `Гостомель`. `-ов`/`-ів` are kept, because they belong to names like `Фастов`.
 - In a multi-word name, the words after the first also compare without vowels, so `Белой Церкви` matches `Белая Церковь`.
-- A name followed by `район`, `область`, `обл.`, or `громада` is the administrative area, not the town, and is skipped.
+- A name followed in the same clause by `район`, `область`, `обл.`, or `громада` (with case endings, whole words) is the administrative area, not the town, and is skipped. `Одессу. Областной центр` and `Киев облетают` are not areas.
+- Quote marks and apostrophes around a word are dropped (`'Киев'`); one inside a name (`Кам’янське`) stays.
 - Names that several places share resolve as follows:
   - a higher administrative rank wins;
   - within the same rank, a place wins only with at least ten times the population of the next one;
@@ -97,4 +103,5 @@ Lookup rules:
 - A clause's places are not given roles. In `к Киеву со стороны Гостомеля`, both Kyiv and Hostomel are observations for the same hazard.
 - Clauses follow punctuation, not grammar. A clear and a threat written in one clause without punctuation read as clear.
 - A reply's quoted text is not part of the evidence, so a clear line such as `минус по обоим` that names no place is only reported as unlocated.
+- Ordinary words that are also hazard names cannot be told apart by form: `калибра 152` (a caliber) reads as a `Калибр` missile.
 - The default TTLs are working values, not measured ones.

@@ -10,7 +10,7 @@
 
 use std::collections::BTreeSet;
 
-use geo::{Coord, LineString, Polygon};
+use geo::{ChamberlainDuquetteArea, Coord, Haversine, Length, LineString, Polygon};
 use h3o::geom::{ContainmentMode, TilerBuilder};
 use h3o::{CellIndex, LatLng, Resolution};
 use prism_signal_core::{CellId, CellResolution, Geometry, Position, Ring};
@@ -76,8 +76,9 @@ pub struct CellSet {
 /// Covers a geometry at `resolution` with at most `max_cells` cells.
 ///
 /// - A point gives the one cell that contains it.
-/// - A polygon gives the cells whose centers fall inside it; a polygon smaller than a cell
-///   may give an empty set.
+/// - A polygon gives the cells whose centers fall inside it. A polygon that contains no cell
+///   center, such as one smaller than a cell, gives the cells it touches instead, so a valid
+///   polygon never yields an empty set.
 /// - An explicit cell list is re-expressed at `resolution`: finer cells map to their
 ///   parents, coarser cells expand to their children.
 ///
@@ -151,11 +152,53 @@ fn cover_polygon(
         line_string(exterior),
         holes.iter().map(line_string).collect(),
     );
-    let mut tiler = TilerBuilder::new(resolution)
-        .containment_mode(ContainmentMode::ContainsCentroid)
-        .build();
+    if estimated_cells(&polygon, resolution) > (max_cells as f64) * ESTIMATE_SLACK {
+        return Err(CoverError::TooLarge { limit: max_cells });
+    }
+
+    let mut cells = tile(
+        &polygon,
+        resolution,
+        ContainmentMode::ContainsCentroid,
+        max_cells,
+    )?;
+    if cells.is_empty() {
+        // No cell center lies inside: a polygon smaller than a cell, or a sliver. Fall back
+        // to every cell the polygon touches, so the zone is never silently lost.
+        cells = tile(&polygon, resolution, ContainmentMode::Covers, max_cells)?;
+    }
+    if cells.is_empty() {
+        return Err(CoverError::InvalidGeometry("polygon covers no cell"));
+    }
+    Ok(cells)
+}
+
+/// The estimate may exceed the real count by this factor before a polygon is refused, since
+/// it works from average cell size.
+const ESTIMATE_SLACK: f64 = 2.;
+
+/// A cheap estimate of the tiler's work, taken before tiling so an oversize polygon is
+/// refused without computing its cells: the larger of the number of cells the area holds
+/// and the number of cell edges along the boundary.
+fn estimated_cells(polygon: &Polygon, resolution: Resolution) -> f64 {
+    let area_km2 = polygon.chamberlain_duquette_unsigned_area() / 1e6;
+    let boundary_km = std::iter::once(polygon.exterior())
+        .chain(polygon.interiors())
+        .map(|ring| Haversine.length(ring))
+        .sum::<f64>()
+        / 1e3;
+    (area_km2 / resolution.area_km2()).max(boundary_km / resolution.edge_length_km())
+}
+
+fn tile(
+    polygon: &Polygon,
+    resolution: Resolution,
+    mode: ContainmentMode,
+    max_cells: usize,
+) -> Result<BTreeSet<CellIndex>, CoverError> {
+    let mut tiler = TilerBuilder::new(resolution).containment_mode(mode).build();
     tiler
-        .add(polygon)
+        .add(polygon.clone())
         .map_err(|_| CoverError::InvalidGeometry("polygon"))?;
 
     let mut cells = BTreeSet::new();
@@ -263,6 +306,26 @@ mod tests {
         let error = cover(&zone, res(9), 10).unwrap_err();
         assert_eq!(error, CoverError::TooLarge { limit: 10 });
         assert_eq!(error.code(), "cover_too_large");
+    }
+
+    #[test]
+    fn continent_sized_polygon_is_refused_before_tiling() {
+        // Would be hundreds of millions of cells; it must fail fast, not after tiling them.
+        let zone = square(30.0, 50.0, 20.0);
+        let started = std::time::Instant::now();
+        let error = cover(&zone, res(12), 1_000).unwrap_err();
+        assert_eq!(error, CoverError::TooLarge { limit: 1_000 });
+        assert!(started.elapsed() < std::time::Duration::from_secs(2));
+    }
+
+    #[test]
+    fn polygon_smaller_than_a_cell_still_covers_a_cell() {
+        // About 200 m across at resolution 7, where cells are about 2.5 km across.
+        let zone = square(30.52, 50.45, 0.001);
+        let cells = cover(&zone, res(7), 100).unwrap();
+        assert!(!cells.cells.is_empty());
+        let point = cover(&Geometry::point(pos(30.52, 50.45)), res(7), 1).unwrap();
+        assert!(cells.cells.contains(&point.cells[0]));
     }
 
     #[test]

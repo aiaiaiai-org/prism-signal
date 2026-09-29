@@ -162,18 +162,17 @@ impl<'g> Normalizer<'g> {
         out: &mut Normalized,
     ) {
         let tokens = text::tokenize(line);
-        let kinds = lexicon::kinds(&tokens);
+        let mut kinds = lexicon::kinds(&tokens);
         if kinds.is_empty() {
             return;
         }
         let places = self.places(&tokens, line_no, out);
+        let place_clauses: BTreeSet<usize> = places.iter().map(|p| p.clause).collect();
+        lexicon::absorb_generic_missiles(&mut kinds, &place_clauses);
 
         // A place belongs to the nearest clause at or before it that names a hazard; places
         // ahead of the first such clause (`Киев: 2 баллистики`) belong to that first one.
-        let kind_clauses: BTreeSet<usize> = kinds
-            .iter()
-            .flat_map(|m| m.clauses.iter().copied())
-            .collect();
+        let kind_clauses: BTreeSet<usize> = kinds.iter().map(|m| m.clause).collect();
         let owner = |clause: usize| {
             kind_clauses
                 .range(..=clause)
@@ -192,7 +191,7 @@ impl<'g> Normalizer<'g> {
             let mut located = false;
             for place in places
                 .iter()
-                .filter(|p| owner(p.clause).is_some_and(|c| mention.clauses.contains(&c)))
+                .filter(|p| owner(p.clause) == Some(mention.clause))
             {
                 located = true;
                 let mut matched = mention.words.clone();
@@ -240,8 +239,14 @@ impl<'g> Normalizer<'g> {
                 i += 1;
                 continue;
             };
-            if tokens.get(i + len).is_some_and(lexicon::is_admin_area) {
+            let clause = tokens[i + len - 1].clause;
+            if tokens
+                .get(i + len)
+                .is_some_and(|next| next.clause == clause && lexicon::is_admin_area(next))
+            {
                 // `Вознесенского района`: the name of a district or region, not the town.
+                // The area word must be in the same clause: `Одессу. Областной центр` is two
+                // statements.
                 i += len + 1;
                 continue;
             }
