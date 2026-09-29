@@ -16,5 +16,10 @@
       "Bash(git push origin *)"
     ],
     "deny": ["Bash(git push --force *)", "Bash(git push -f *)"]
+  },
+  "attribution": {
+    "commit": "",
+    "pr": "",
+    "sessionUrl": false
   }
 }
