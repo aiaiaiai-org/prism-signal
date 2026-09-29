@@ -193,7 +193,12 @@ impl Gazetteer {
         if !tokens.first()?.is_capitalized() {
             return None;
         }
-        (1..=self.longest.min(tokens.len())).rev().find_map(|len| {
+        // A multi-word name never spans a clause boundary.
+        let same_clause = tokens
+            .iter()
+            .take_while(|t| t.clause == tokens[0].clause)
+            .count();
+        (1..=self.longest.min(same_clause)).rev().find_map(|len| {
             let hits = self.index.get(&key(&tokens[..len]))?;
             let places: Vec<&Place> = hits.iter().map(|&i| &self.places[i]).collect();
             Some((resolve(places), len))

@@ -10,6 +10,8 @@ pub(crate) struct Token {
     pub(crate) raw: String,
     /// Lowercase, `ё` folded to `е`, apostrophes removed.
     pub(crate) norm: String,
+    /// Index of the clause within the line; see [`tokenize`].
+    pub(crate) clause: usize,
 }
 
 impl Token {
@@ -45,18 +47,28 @@ pub(crate) fn normalize_word(word: &str) -> String {
         .collect()
 }
 
+/// Characters that end a clause: sentence punctuation, commas, and dashes.
+fn ends_clause(c: char) -> bool {
+    matches!(c, '.' | ',' | ';' | ':' | '!' | '?' | '—' | '–')
+}
+
 /// Splits a line into words: letters, digits, inner hyphens, and apostrophes. Slashes and
-/// all other punctuation separate words.
+/// all other punctuation separate words. Each word records its clause: a new clause starts
+/// after `. , ; : ! ?`, an em or en dash, or a free-standing hyphen (`мопеды - минус`).
 pub(crate) fn tokenize(line: &str) -> Vec<Token> {
     let mut tokens = Vec::new();
     let mut current = String::new();
-    let mut flush = |current: &mut String| {
+    let mut clause = 0;
+    let mut flush = |current: &mut String, clause: &mut usize| {
         let word = current.trim_matches('-');
         if !word.is_empty() {
             tokens.push(Token {
                 raw: word.to_owned(),
                 norm: normalize_word(word),
+                clause: *clause,
             });
+        } else if !current.is_empty() {
+            *clause += 1;
         }
         current.clear();
     };
@@ -64,10 +76,13 @@ pub(crate) fn tokenize(line: &str) -> Vec<Token> {
         if c.is_alphanumeric() || c == '-' || is_apostrophe(c) || is_stress_mark(c) {
             current.push(c);
         } else {
-            flush(&mut current);
+            flush(&mut current, &mut clause);
+            if ends_clause(c) {
+                clause += 1;
+            }
         }
     }
-    flush(&mut current);
+    flush(&mut current, &mut clause);
     tokens
 }
 
@@ -114,6 +129,26 @@ mod tests {
         assert_eq!(
             words,
             ["в", "сторону", "Каролино-Бугаза", "Овидиополя", "громко"]
+        );
+    }
+
+    #[test]
+    fn clauses_split_on_punctuation_and_free_dashes() {
+        let clauses: Vec<_> = tokenize("мопед над Одессой, 2 шахеда - минус. Каролино-Бугаз")
+            .into_iter()
+            .map(|t| (t.raw, t.clause))
+            .collect();
+        assert_eq!(
+            clauses,
+            [
+                ("мопед".to_owned(), 0),
+                ("над".to_owned(), 0),
+                ("Одессой".to_owned(), 0),
+                ("2".to_owned(), 1),
+                ("шахеда".to_owned(), 1),
+                ("минус".to_owned(), 2),
+                ("Каролино-Бугаз".to_owned(), 3),
+            ]
         );
     }
 

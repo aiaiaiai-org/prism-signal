@@ -3,9 +3,11 @@
 
 //! Rule-based normalization of channel evidence into located [`SignalObservation`]s.
 //!
-//! A [`Normalizer`] reads the text of one [`Evidence`] item line by line. A line becomes
-//! observations when it names at least one hazard kind (see the lexicon) and at least one
-//! place the [`Gazetteer`] resolves; it yields one observation per kind and place. Nothing is
+//! A [`Normalizer`] reads the text of one [`Evidence`] item line by line, and each line
+//! clause by clause. A hazard mention yields one observation per place in its clause span:
+//! a place belongs to the nearest clause at or before it that names a hazard. Whether a
+//! mention is a threat or a clear is decided within its clause as well, so a line that
+//! clears one hazard and reports another yields both correctly. Nothing is
 //! guessed: a line with a hazard but no resolvable place, or with a place several gazetteer
 //! entries share, is reported in [`Normalized::skipped`] instead.
 //!
@@ -16,6 +18,8 @@
 mod gazetteer;
 mod lexicon;
 mod text;
+
+use std::collections::BTreeSet;
 
 use prism_signal_core::{
     Evidence, Geometry, HazardKind, ObservationProvenance, SignalObservation, Stance, TtlSeconds,
@@ -122,6 +126,7 @@ pub struct Normalizer<'g> {
 struct PlaceMention<'g> {
     place: &'g Place,
     words: String,
+    clause: usize,
 }
 
 impl<'g> Normalizer<'g> {
@@ -162,26 +167,34 @@ impl<'g> Normalizer<'g> {
             return;
         }
         let places = self.places(&tokens, line_no, out);
-        if places.is_empty() {
-            out.skipped.push(Skipped {
-                line: line_no,
-                reason: SkipReason::Unlocated {
-                    kinds: kinds.iter().map(|k| k.kind).collect(),
-                },
-            });
-            return;
-        }
-        let stance = if lexicon::is_clear(&tokens) {
-            Stance::Clear
-        } else {
-            Stance::Threat
+
+        // A place belongs to the nearest clause at or before it that names a hazard; places
+        // ahead of the first such clause (`Киев: 2 баллистики`) belong to that first one.
+        let kind_clauses: BTreeSet<usize> = kinds
+            .iter()
+            .flat_map(|m| m.clauses.iter().copied())
+            .collect();
+        let owner = |clause: usize| {
+            kind_clauses
+                .range(..=clause)
+                .next_back()
+                .or_else(|| kind_clauses.first())
+                .copied()
         };
+
+        let mut unlocated = Vec::new();
         for mention in &kinds {
+            let stance = mention.stance;
             let ttl = match stance {
                 Stance::Threat => self.rules.threat_ttl(mention.kind),
                 Stance::Clear => self.rules.clear,
             };
-            for place in &places {
+            let mut located = false;
+            for place in places
+                .iter()
+                .filter(|p| owner(p.clause).is_some_and(|c| mention.clauses.contains(&c)))
+            {
+                located = true;
                 let mut matched = mention.words.clone();
                 matched.push(place.words.clone());
                 out.observations.push(SignalObservation {
@@ -202,6 +215,15 @@ impl<'g> Normalizer<'g> {
                     },
                 });
             }
+            if !located && !unlocated.contains(&mention.kind) {
+                unlocated.push(mention.kind);
+            }
+        }
+        if !unlocated.is_empty() {
+            out.skipped.push(Skipped {
+                line: line_no,
+                reason: SkipReason::Unlocated { kinds: unlocated },
+            });
         }
     }
 
@@ -230,8 +252,16 @@ impl<'g> Normalizer<'g> {
                 .join(" ");
             match found {
                 PlaceMatch::Found(place) => {
-                    if !places.iter().any(|p| p.place.id == place.id) {
-                        places.push(PlaceMention { place, words });
+                    let clause = tokens[i].clause;
+                    let seen = places
+                        .iter()
+                        .any(|p| p.place.id == place.id && p.clause == clause);
+                    if !seen {
+                        places.push(PlaceMention {
+                            place,
+                            words,
+                            clause,
+                        });
                     }
                 }
                 PlaceMatch::Ambiguous(candidates) => out.skipped.push(Skipped {

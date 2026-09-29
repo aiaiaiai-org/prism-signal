@@ -184,27 +184,106 @@ fn whole_capture_is_deterministic() {
     assert!(located >= 30, "{located}");
 }
 
-#[test]
-fn clear_words_turn_a_located_line_into_clear() {
-    let g = gazetteer();
-    let evidence = Evidence {
+fn evidence(text: &str) -> Evidence {
+    Evidence {
         source_id: SourceId::new("telegram.channel", "example").unwrap(),
         external_id: ExternalId::try_from("example/1".to_owned()).unwrap(),
         published_at: Timestamp::parse("2026-09-29T10:00:00Z").unwrap(),
         edited: false,
-        text: Some("минус по мопеду над Киевом".to_owned()),
+        text: Some(text.to_owned()),
         media: Vec::new(),
         forwarded_from: None,
         provenance: Provenance {
             url: "https://t.me/example/1".to_owned(),
             collector: "test/0".to_owned(),
         },
-    };
-    let out = Normalizer::new(&g, NormalizeRules::default()).normalize(&evidence);
+    }
+}
+
+fn stances(text: &str) -> Vec<(HazardKind, Stance, String)> {
+    let g = gazetteer();
+    Normalizer::new(&g, NormalizeRules::default())
+        .normalize(&evidence(text))
+        .observations
+        .into_iter()
+        .map(|o| (o.kind, o.stance, o.provenance.place_id.unwrap()))
+        .collect()
+}
+
+#[test]
+fn clear_words_turn_a_located_line_into_clear() {
+    let g = gazetteer();
+    let out = Normalizer::new(&g, NormalizeRules::default())
+        .normalize(&evidence("минус по мопеду над Киевом"));
     let [observation] = &out.observations[..] else {
         panic!("expected one observation");
     };
     assert_eq!(observation.stance, Stance::Clear);
     assert_eq!(observation.kind, HazardKind::AttackDrone);
     assert_eq!(observation.ttl.get(), 10 * 60);
+}
+
+#[test]
+fn mixed_line_keeps_clear_and_threat_with_their_own_places() {
+    assert_eq!(
+        stances("минус по мопеду над Одессой, 2 баллистики на Киев"),
+        [
+            (
+                HazardKind::AttackDrone,
+                Stance::Clear,
+                "test:odesa".to_owned()
+            ),
+            (
+                HazardKind::BallisticMissile,
+                Stance::Threat,
+                "test:kyiv".to_owned()
+            ),
+        ]
+    );
+}
+
+#[test]
+fn trailing_clear_applies_to_the_hazard_before_it() {
+    assert_eq!(
+        stances("мопеды над Бучей - минус"),
+        [(
+            HazardKind::AttackDrone,
+            Stance::Clear,
+            "test:bucha".to_owned()
+        )]
+    );
+    assert_eq!(
+        stances("минус, 2 шахеда на Одессу"),
+        [(
+            HazardKind::AttackDrone,
+            Stance::Threat,
+            "test:odesa".to_owned()
+        )]
+    );
+}
+
+#[test]
+fn place_before_the_first_hazard_belongs_to_it() {
+    assert_eq!(
+        stances("Киев: 2 баллистики"),
+        [(
+            HazardKind::BallisticMissile,
+            Stance::Threat,
+            "test:kyiv".to_owned()
+        )]
+    );
+}
+
+#[test]
+fn hazard_without_a_place_in_its_span_is_unlocated() {
+    let g = gazetteer();
+    let out = Normalizer::new(&g, NormalizeRules::default())
+        .normalize(&evidence("2 баллистики на Киев. мопеды пока над морем"));
+    assert_eq!(out.observations.len(), 1);
+    assert_eq!(
+        out.skipped[0].reason,
+        SkipReason::Unlocated {
+            kinds: vec![HazardKind::AttackDrone]
+        }
+    );
 }
