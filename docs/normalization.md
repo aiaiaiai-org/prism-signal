@@ -50,6 +50,7 @@ Rules, in the order they apply:
 - A generic `ракета` next to `баллистика` is the same threat named twice, so the generic kind is dropped.
 - `минус`, `відбій`, `отбой` call a threat off. `минус по мопедам` is `phase: cleared, kind: drone`. A bare `минус по всему на Маяки` is `cleared` with no kind and its places kept.
 - Only those words do. Reports of some interceptions (`сбито`, `сбития`), of a target no longer tracked (`не фиксируется`), and of no further launches (`больше не было`) say nothing about what is still in the air, and the channel itself writes `не фиксируются, но тревога всё ещё активна`. Treating them as all-clears sent a false `відбій` on the sample, as did the news words `знищено` and `сбито`.
+- In a sentence with an all-clear word, a comma that starts a new statement (one that names a hazard of its own) ends the clause. `по первым 2 КАБам минус, еще 2 КАБа подлетают к Черноморску` calls off the first two and reports two more; read as one clause it called off the threat at Chornomorsk. A comma that only continues a list (`на Николаев, Одессу и Киевскую область минуса`) does not split, so the all-clear still reaches every city in it.
 - A negator directly before an all-clear word, or `нет`/`немає` within two words after it, voids it: `актуальна до отбоя тревоги` means the threat lasts until the all-clear, and `отбоя пока нет` says it has not come.
 - Multi-word all-clear phrases are supported (`cleared.phrases`) but the shipped lexicon has none. A phrase never clears a threat by itself: it needs a stated kind, because phrases such as `больше не` turn up in ordinary speech.
 - A sentence with a place but no kind of its own takes the kind of the nearest earlier threat sentence in the same post, but only on an explicit signal that it continues that threat. The reading says so in `kind_inherited`. Two signals count:
@@ -88,7 +89,7 @@ python3 scripts/build-gazetteer.py UA.txt     # or use a local copy
 
 ## Measured on the channel
 
-On 495 posts from `vanek_nikolaev` spanning 26 days (collected 2026-09-29), 704 readings, 479 of them actionable, 154 with an inherited kind. The most frequent affected places were Kyiv, Mykolaiv, Odesa, Brovary, and Dnipro.
+On 495 posts from `vanek_nikolaev` spanning 26 days (collected 2026-09-29), 704 readings, 480 of them actionable, 154 with an inherited kind. The most frequent affected places were Kyiv, Mykolaiv, Odesa, Brovary, and Dnipro.
 
 The other 129 threat readings have a kind but no `target` or `via` place. 68 of them use a region word, 17 look like launch reports, and 22 carry `unresolved` words. In rough order of size:
 

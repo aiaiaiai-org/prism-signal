@@ -38,6 +38,11 @@ pub(crate) struct Token {
     ///
     /// Roles and lists never propagate across a break. The first token always has one.
     pub barrier_before: bool,
+    /// A comma lies between this word and the previous one.
+    ///
+    /// A comma does not end a sentence, since it also separates items of a list. It ends one only
+    /// for the reach of an all-clear word; see `Normalizer::read`.
+    pub comma_before: bool,
 }
 
 impl Token {
@@ -60,16 +65,19 @@ fn is_barrier(c: char) -> bool {
 pub(crate) fn tokenize(text: &str) -> Vec<Token> {
     let mut tokens = Vec::new();
     let mut barrier = true;
+    let mut comma = false;
     let mut word = String::new();
-    let mut flush = |word: &mut String, barrier: &mut bool| {
+    let mut flush = |word: &mut String, barrier: &mut bool, comma: &mut bool| {
         let trimmed = word.trim_matches(|c: char| !c.is_alphanumeric());
         if !trimmed.is_empty() {
             tokens.push(Token {
                 original: trimmed.to_owned(),
                 folded: fold(trimmed),
                 barrier_before: *barrier,
+                comma_before: *comma && !*barrier,
             });
             *barrier = false;
+            *comma = false;
         }
         word.clear();
     };
@@ -77,13 +85,15 @@ pub(crate) fn tokenize(text: &str) -> Vec<Token> {
         if is_word_char(c) {
             word.push(c);
         } else {
-            flush(&mut word, &mut barrier);
+            flush(&mut word, &mut barrier, &mut comma);
             if is_barrier(c) {
                 barrier = true;
+            } else if c == ',' {
+                comma = true;
             }
         }
     }
-    flush(&mut word, &mut barrier);
+    flush(&mut word, &mut barrier, &mut comma);
     tokens
 }
 
@@ -120,6 +130,23 @@ mod tests {
             .map(|t| t.folded.as_str())
             .collect();
         assert_eq!(breaks, ["к", "дальше", "еще"]);
+    }
+
+    #[test]
+    fn a_comma_is_recorded_without_ending_the_sentence() {
+        let tokens = tokenize("минус по КАБам, еще 2 КАБа. потом Киев,Одесса");
+        let commas: Vec<_> = tokens
+            .iter()
+            .filter(|t| t.comma_before)
+            .map(|t| t.folded.as_str())
+            .collect();
+        assert_eq!(commas, ["еще", "одесса"]);
+        assert!(
+            tokens
+                .iter()
+                .filter(|t| t.folded == "еще")
+                .all(|t| !t.barrier_before)
+        );
     }
 
     #[test]

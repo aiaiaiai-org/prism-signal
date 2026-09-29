@@ -211,6 +211,7 @@ impl<'g> Normalizer<'g> {
                         normalizer: NORMALIZER.to_owned(),
                         matched,
                         place_id: Some(place.place.id.clone()),
+                        place_name: Some(place.place.name.clone()),
                     },
                 });
             }

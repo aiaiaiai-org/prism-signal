@@ -336,6 +336,9 @@ pub struct ObservationProvenance {
     /// Identifier of the gazetteer entry that gave the geometry, when one did.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub place_id: Option<String>,
+    /// Display name of that place, so a consumer can name it without holding the gazetteer.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub place_name: Option<String>,
 }
 
 /// One normalized, located piece of evidence. Immutable.

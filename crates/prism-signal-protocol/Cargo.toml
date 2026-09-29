@@ -1,0 +1,23 @@
+# © 2026 aiaiaiai · aiaiaiai.org
+# SPDX-License-Identifier: Apache-2.0
+
+[package]
+name = "prism-signal-protocol"
+description = "Wire types of the prism-signal.v1 JSON protocol"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+publish = false
+
+[lints]
+workspace = true
+
+[dependencies]
+prism-signal-core = { path = "../prism-signal-core" }
+prism-signal-fusion = { path = "../prism-signal-fusion" }
+prism-signal-geo = { path = "../prism-signal-geo" }
+serde.workspace = true
+serde_json.workspace = true
