@@ -196,6 +196,18 @@ impl Normalizer {
         })
     }
 
+    /// A normalizer over a caller-supplied gazetteer and a `lexicon.v1` document.
+    ///
+    /// For vocabulary that differs from the shipped one, such as a test of a rule the shipped
+    /// data does not use.
+    pub fn from_vocabulary(gazetteer: Gazetteer, lexicon_json: &str) -> Result<Self, LoadError> {
+        Ok(Self {
+            gazetteer,
+            lexicon: Lexicon::from_json(lexicon_json)?,
+            max_text_chars: DEFAULT_MAX_TEXT_CHARS,
+        })
+    }
+
     /// A normalizer over a caller-supplied gazetteer and the shipped lexicon.
     pub fn with_gazetteer(gazetteer: Gazetteer) -> Result<Self, LoadError> {
         Ok(Self {
@@ -274,7 +286,7 @@ impl Normalizer {
             }
             if let Some(kind) = self.lexicon.kind(&token.folded) {
                 clause.kinds.insert(kind);
-            } else if self.lexicon.is_cleared(&token.folded) {
+            } else if self.lexicon.is_cleared_at(tokens, i) {
                 clause.cleared_word = true;
             } else if matches!(context, Some(PlaceRole::Target | PlaceRole::Via))
                 && self.lexicon.cue(&token.folded).is_none()

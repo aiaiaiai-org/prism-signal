@@ -81,13 +81,7 @@
  "cleared": {
   "stems": [
    "минус",
-   "мінус",
-   "сбит",
-   "збито",
-   "збита",
-   "збити",
-   "знищен",
-   "уничтожен"
+   "мінус"
   ],
   "forms": [
    "отбой",
@@ -97,16 +91,19 @@
    "відбою",
    "відбої"
   ],
-  "note": "'минус' is the channel's all-clear for a threat it reported earlier; phrases are weaker and only clear a threat of a stated kind",
-  "phrases": [
-   "больше не",
-   "більше не",
-   "не фиксируется",
-   "не фіксується",
-   "без дальнейшей фиксации",
-   "без подальшої фіксації",
-   "не фиксируются",
-   "не фіксуються"
+  "note": "only the channel's explicit all-clear words end a threat. Reports of some interceptions (сбито), of a target no longer tracked (не фиксируется), and of no further launches (больше не было) say nothing about what is still in the air, so they are not all-clears. A negator directly before the word voids it: 'актуальна до отбоя' means the threat lasts until the all-clear. phrases is supported but ships empty",
+  "phrases": [],
+  "negated_by": [
+   "до",
+   "без",
+   "нет",
+   "немає",
+   "нема"
+  ],
+  "negated_after": [
+   "нет",
+   "немає",
+   "нема"
   ]
  },
  "cues": {
