@@ -16,6 +16,7 @@ One assessment is one *episode* of one *class* of hazard at one *place*: "drones
 | `valid_from`, `valid_until` | the first report, and when it lapses unless renewed |
 | `status` | `active`, `expired`, or `retracted`, as of the evaluation time |
 | `revision` | grows with every renewal |
+| `proximity` | `target` when any report aims the hazard at the place, or the reader does not say; `nearby` only when every report says it is passing or near. A consumer may warn about `target` and, if the person asked, about `nearby` |
 | `likelihood`, `corroboration_count` | a band, never a percentage: `moderate` for one source, `high` for two or more |
 | `evidence` | the reports behind it, oldest first, each with its public URL |
 

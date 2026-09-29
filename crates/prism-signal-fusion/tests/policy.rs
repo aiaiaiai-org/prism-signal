@@ -12,7 +12,7 @@ use prism_signal_core::{
     CellResolution, ConfidenceBand, Evidence, Geometry, Position, SignalObservation, Timestamp,
 };
 use prism_signal_fusion::{
-    Assessed, Assessment, EventKind, FusionPolicy, HazardClass, Status, assess,
+    Assessed, Assessment, EventKind, FusionPolicy, HazardClass, Proximity, Status, assess,
 };
 use prism_signal_normalize::Normalizer;
 
@@ -531,4 +531,73 @@ fn a_comma_joined_all_clear_and_threat_does_not_end_the_threat() {
         at[0].revision, 2,
         "and it renewed the alert instead of ending it"
     );
+}
+
+// ---- proximity ----
+
+#[test]
+fn a_hazard_only_passing_a_place_is_nearby_until_a_report_aims_it_there() {
+    let r = fuse(
+        &[(
+            1,
+            "2026-09-28T22:00:00Z",
+            "1 реактивный мопед пролетает южнее Каменского",
+        )],
+        "2026-09-28T22:01:00Z",
+    );
+    assert_eq!(at_place(&r, "Кам'янське")[0].proximity, Proximity::Nearby);
+
+    let aimed = fuse(
+        &[
+            (
+                1,
+                "2026-09-28T22:00:00Z",
+                "1 реактивный мопед пролетает южнее Каменского",
+            ),
+            (
+                2,
+                "2026-09-28T22:03:00Z",
+                "1 реактивный мопед курсом на Каменское",
+            ),
+        ],
+        "2026-09-28T22:04:00Z",
+    );
+    let a = at_place(&aimed, "Кам'янське");
+    assert_eq!(a.len(), 1, "the same episode");
+    assert_eq!(
+        a[0].proximity,
+        Proximity::Target,
+        "upgraded, and renewed so a consumer hears of it"
+    );
+    assert_eq!(a[0].revision, 2);
+}
+
+#[test]
+fn a_hazard_aimed_at_a_place_is_a_target_and_stays_one() {
+    let r = fuse(
+        &[
+            (1, "2026-09-28T22:00:00Z", "1 реактивный мопед над Киевом"),
+            (
+                2,
+                "2026-09-28T22:02:00Z",
+                "1 реактивный мопед пролетает мимо Киева",
+            ),
+        ],
+        "2026-09-28T22:03:00Z",
+    );
+    assert_eq!(at_place(&r, "Київ")[0].proximity, Proximity::Target);
+}
+
+#[test]
+fn a_reader_that_gives_no_role_is_read_as_aiming_at_the_place() {
+    let mut obs = observations(&[(
+        1,
+        "2026-09-28T22:00:00Z",
+        "1 реактивный мопед пролетает южнее Каменского",
+    )]);
+    for o in &mut obs {
+        o.provenance.place_role = None;
+    }
+    let r = assess(&obs, &FusionPolicy::v1(), ts("2026-09-28T22:01:00Z"));
+    assert_eq!(r.assessments[0].proximity, Proximity::Target);
 }

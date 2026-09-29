@@ -212,6 +212,7 @@ impl<'g> Normalizer<'g> {
                         matched,
                         place_id: Some(place.place.id.clone()),
                         place_name: Some(place.place.name.clone()),
+                        place_role: None,
                     },
                 });
             }

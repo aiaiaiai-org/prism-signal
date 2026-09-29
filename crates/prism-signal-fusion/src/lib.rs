@@ -42,8 +42,8 @@
 use std::collections::{BTreeMap, BTreeSet};
 
 use prism_signal_core::{
-    CellId, CellResolution, ConfidenceBand, ExternalId, Geometry, HazardKind, SignalObservation,
-    SourceId, Stance, Timestamp,
+    CellId, CellResolution, ConfidenceBand, ExternalId, Geometry, HazardKind, PlaceRole,
+    SignalObservation, SourceId, Stance, Timestamp,
 };
 use prism_signal_geo::{CellSet, CoverError, cover, disc, expand};
 use serde::{Deserialize, Serialize};
@@ -89,6 +89,20 @@ impl HazardClass {
             Self::Missile => "missile",
         }
     }
+}
+
+/// How close the hazard is to the place, as far as the reader could tell.
+///
+/// `target` when any report in the episode aimed the hazard at the place, or when the reader does
+/// not distinguish. `nearby` only when every report says the hazard was passing or near it. A
+/// consumer may warn people about `target` and, if they asked, about `nearby`.
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum Proximity {
+    /// Aimed at the place, or the reader does not say.
+    Target,
+    /// Passing or near the place.
+    Nearby,
 }
 
 /// The parameters of fusion, named and versioned so results are replayable.
@@ -180,6 +194,8 @@ pub struct Assessment {
     /// The place, when the observations carried one.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub place: Option<PlaceRef>,
+    /// Whether the hazard is aimed at the place or only near it.
+    pub proximity: Proximity,
     /// Cells a person must be standing in to be concerned.
     pub cells: CellSet,
     /// When the first report was made.
@@ -296,6 +312,8 @@ struct Episode {
     class: HazardClass,
     place: Option<PlaceRef>,
     cells: CellSet,
+    /// Some report aimed the hazard at the place, or did not say where it was aimed.
+    aimed: bool,
     first_at: OffsetDateTime,
     valid_until: OffsetDateTime,
     kinds: BTreeSet<HazardKind>,
@@ -324,6 +342,11 @@ impl Episode {
             class: self.class,
             kinds: self.kinds.into_iter().collect(),
             place: self.place,
+            proximity: if self.aimed {
+                Proximity::Target
+            } else {
+                Proximity::Nearby
+            },
             cells: self.cells,
             valid_from: Timestamp::from_datetime(self.first_at),
             valid_until: Timestamp::from_datetime(self.valid_until),
@@ -334,6 +357,12 @@ impl Episode {
             evidence: self.evidence,
         }
     }
+}
+
+/// Whether an observation aims its hazard at the place. A reader that gives no role does not
+/// distinguish, so the place is treated as the target.
+fn is_aimed(observation: &SignalObservation) -> bool {
+    !matches!(observation.provenance.place_role, Some(PlaceRole::Via))
 }
 
 fn evidence_ref(observation: &SignalObservation) -> EvidenceRef {
@@ -429,6 +458,7 @@ pub fn assess(
             Stance::Threat => {
                 if let Some(episode) = open.get_mut(&slot) {
                     if at <= episode.valid_until {
+                        episode.aimed |= is_aimed(observation);
                         episode.kinds.insert(observation.kind);
                         episode.sources.insert(observation.source_id.clone());
                         episode.valid_until = episode.valid_until.max(valid_until(observation));
@@ -480,6 +510,7 @@ pub fn assess(
                             name: observation.provenance.place_name.clone(),
                         }),
                     cells: fp.cells.clone(),
+                    aimed: is_aimed(observation),
                     first_at: at,
                     valid_until: valid_until(observation),
                     kinds: BTreeSet::from([observation.kind]),

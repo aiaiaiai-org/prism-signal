@@ -18,7 +18,7 @@ use time::{OffsetDateTime, UtcOffset, format_description::well_known::Rfc3339};
 
 pub use observation::{
     CellId, CellResolution, ConfidenceBand, Geometry, GeometryError, HazardKind,
-    ObservationProvenance, Position, Ring, SignalObservation, Stance, TtlSeconds,
+    ObservationProvenance, PlaceRole, Position, Ring, SignalObservation, Stance, TtlSeconds,
 };
 
 /// Invalid core value.

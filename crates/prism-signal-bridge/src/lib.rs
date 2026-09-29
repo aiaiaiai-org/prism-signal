@@ -18,7 +18,8 @@
 //! - a forwarded post is not the source's own report, so it yields nothing.
 
 use prism_signal_core::{
-    HazardKind as Kind, ObservationProvenance, Position, SignalObservation, Stance, TtlSeconds,
+    HazardKind as Kind, ObservationProvenance, PlaceRole as Role, Position, SignalObservation,
+    Stance, TtlSeconds,
 };
 use prism_signal_geo::{CoverError, disc};
 use prism_signal_normalize::{HazardKind, Phase, PlaceMention, PlaceRole, Reading};
@@ -175,6 +176,10 @@ fn observation(
             matched,
             place_id: Some(place.place_id.clone()),
             place_name: Some(place.name.clone()),
+            place_role: Some(match place.role {
+                PlaceRole::Via => Role::Via,
+                _ => Role::Target,
+            }),
         },
     })
 }
@@ -216,6 +221,7 @@ mod tests {
         assert_eq!(o.kind, Kind::BallisticMissile);
         assert_eq!(o.ttl.get(), 20 * 60);
         assert_eq!(o.provenance.place_id.as_deref(), Some("geonames:703448"));
+        assert_eq!(o.provenance.place_role, Some(Role::Target));
         assert_eq!(o.provenance.evidence_id.as_str(), "vanek_nikolaev/1");
         assert!(o.confidence.is_none());
         assert!(matches!(
@@ -236,6 +242,7 @@ mod tests {
     fn a_nearby_place_is_kept_and_the_kinds_map_to_the_contract_vocabulary() {
         let b = bridged("КАБы пролетают южнее Каменского");
         assert_eq!(names(&b), [("Кам'янське", Stance::Threat)]);
+        assert_eq!(b.observations[0].provenance.place_role, Some(Role::Via));
         assert_eq!(b.observations[0].kind, Kind::GuidedBomb);
         assert_eq!(b.observations[0].ttl.get(), 15 * 60);
         assert_eq!(

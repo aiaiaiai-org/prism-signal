@@ -9,7 +9,7 @@
 | `prism-signal-observe` | Rule-based normalization of Russian/Ukrainian alert-channel text into located observations through a bundled GeoNames gazetteer of Ukraine; see [`observation.md`](observation.md) |
 | `prism-signal-source` | Stateless `EvidenceSource` port with `Latest` / `Before` / `After` paging and typed failures |
 | `prism-signal-source-telegram` | Public channel preview (`t.me/s/…`) parser with an injected fetcher and a reqwest implementation; checked against pages captured from a live channel |
-| `prism-signal-collect` | CLI that streams evidence as NDJSON: `backfill` walks history, `follow` polls for new posts |
+| `prism-signal-collect` | CLI that streams evidence as NDJSON: `backfill` walks history, `follow` polls for new posts, `poll` reads once from a cursor and exits (the caller keeps the cursor) |
 | `prism-signal-bridge` | Turns `prism-signal-normalize` readings into `SignalObservation`s: only target and via places, a disc footprint of the place's own reach, and only all-clears that name a kind and a place. See [`readers.md`](readers.md) |
 | `prism-signal-fusion` | `assess(observations, policy, evaluation_time)`: episodes of one hazard class at one place with `issued`, `superseded`, `expired`, and `retracted` events, cells for fan-out, a narrow retraction rule. See [`fusion.md`](fusion.md) |
 | `prism-signal-protocol`, `prism-signal-runtime` | `prism-signal.v1`: `capabilities`, `normalize`, `cover`, `assess` over JSON or NDJSON. See [`protocol.md`](protocol.md) |
