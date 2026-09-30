@@ -903,6 +903,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "925383efa346730478fb4838dbe9137d2a47675ad789c546d150a6e1dd4ab31c"
 
 [[package]]
+name = "prism-signal-bridge"
+version = "0.1.0-alpha.1"
+dependencies = [
+ "prism-signal-core",
+ "prism-signal-geo",
+ "prism-signal-normalize",
+ "serde_json",
+]
+
+[[package]]
 name = "prism-signal-collect"
 version = "0.1.0-alpha.1"
 dependencies = [
@@ -918,6 +928,20 @@ dependencies = [
 name = "prism-signal-core"
 version = "0.1.0-alpha.1"
 dependencies = [
+ "serde",
+ "serde_json",
+ "thiserror",
+ "time",
+]
+
+[[package]]
+name = "prism-signal-fusion"
+version = "0.1.0-alpha.1"
+dependencies = [
+ "prism-signal-bridge",
+ "prism-signal-core",
+ "prism-signal-geo",
+ "prism-signal-normalize",
  "serde",
  "serde_json",
  "thiserror",
@@ -955,6 +979,31 @@ dependencies = [
  "prism-signal-source-telegram",
  "serde_json",
  "thiserror",
+]
+
+[[package]]
+name = "prism-signal-protocol"
+version = "0.1.0-alpha.1"
+dependencies = [
+ "prism-signal-core",
+ "prism-signal-fusion",
+ "prism-signal-geo",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
+name = "prism-signal-runtime"
+version = "0.1.0-alpha.1"
+dependencies = [
+ "prism-signal-bridge",
+ "prism-signal-core",
+ "prism-signal-fusion",
+ "prism-signal-geo",
+ "prism-signal-normalize",
+ "prism-signal-observe",
+ "prism-signal-protocol",
+ "serde_json",
 ]
 
 [[package]]

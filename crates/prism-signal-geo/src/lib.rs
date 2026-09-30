@@ -109,6 +109,69 @@ pub fn cover(
     })
 }
 
+/// Mean Earth radius in km, the sphere the disc is drawn on.
+const EARTH_RADIUS_KM: f64 = 6371.0088;
+
+/// The most vertices a [`disc`] may have. A bound, so a request cannot ask for unbounded work.
+pub const MAX_DISC_VERTICES: usize = 360;
+
+/// A circle of `radius_km` around `center`, as a polygon of `vertices` corners on the sphere.
+///
+/// The corners lie exactly on the circle, so the polygon sits inside it and the gap at the
+/// middle of an edge is `radius * (1 - cos(pi / vertices))`: 0.1 km for a 12 km disc drawn with
+/// 48 corners. Equal input gives equal output.
+///
+/// This is how a place with a footprint, rather than a point, is given a geometry a cover can
+/// use. It does not cross the antimeridian or enclose a pole.
+pub fn disc(center: Position, radius_km: f64, vertices: usize) -> Result<Geometry, CoverError> {
+    if !radius_km.is_finite() || radius_km <= 0.0 || !(8..=MAX_DISC_VERTICES).contains(&vertices) {
+        return Err(CoverError::InvalidGeometry("disc"));
+    }
+    let angular = radius_km / EARTH_RADIUS_KM;
+    let (lat0, lon0) = (center.lat().to_radians(), center.lon().to_radians());
+    let mut corners = Vec::with_capacity(vertices + 1);
+    for i in 0..vertices {
+        let bearing = std::f64::consts::TAU * (i as f64) / (vertices as f64);
+        let lat = (lat0.sin() * angular.cos() + lat0.cos() * angular.sin() * bearing.cos()).asin();
+        let lon = lon0
+            + (bearing.sin() * angular.sin() * lat0.cos())
+                .atan2(angular.cos() - lat0.sin() * lat.sin());
+        let corner = Position::new(lon.to_degrees(), lat.to_degrees())
+            .map_err(|_| CoverError::InvalidGeometry("disc leaves the map"))?;
+        corners.push(corner);
+    }
+    corners.push(corners[0]);
+    let ring = Ring::try_from(corners).map_err(|_| CoverError::InvalidGeometry("disc"))?;
+    Ok(Geometry::Polygon { rings: vec![ring] })
+}
+
+/// A cell set widened by `rings` rings of neighbours, sorted and deduplicated.
+///
+/// A person is placed in the cell that contains them, and a cover holds the cells whose centers
+/// lie inside a zone, so someone just inside the zone's edge can stand in a cell whose center is
+/// just outside it. One ring of neighbours closes that gap in the safe direction: it may alert
+/// someone slightly outside the zone, and never miss someone inside it.
+pub fn expand(set: &CellSet, rings: u32, max_cells: usize) -> Result<CellSet, CoverError> {
+    let resolution = h3_resolution(set.resolution);
+    let mut cells = BTreeSet::new();
+    for id in &set.cells {
+        let cell = parse_cell(id)?;
+        if cell.resolution() != resolution {
+            return Err(CoverError::InvalidGeometry("cell resolution mismatch"));
+        }
+        for neighbour in cell.grid_disk::<Vec<_>>(rings) {
+            cells.insert(neighbour);
+            if cells.len() > max_cells {
+                return Err(CoverError::TooLarge { limit: max_cells });
+            }
+        }
+    }
+    Ok(CellSet {
+        resolution: set.resolution,
+        cells: cells.into_iter().map(cell_id).collect(),
+    })
+}
+
 /// Parses a wire cell identifier into an H3 cell, rejecting values that are not cells.
 pub fn parse_cell(id: &CellId) -> Result<CellIndex, CoverError> {
     id.as_str()
@@ -386,5 +449,106 @@ mod tests {
         let profile = GridProfile::zerox1_current();
         assert_eq!(profile.broadcast.get(), 7);
         assert_eq!(profile.proximity.get(), 8);
+    }
+
+    // ---- disc and expand ----
+
+    fn kyiv() -> Position {
+        pos(30.5238, 50.4547)
+    }
+
+    fn km(a: Position, b: Position) -> f64 {
+        let (p, q) = (a.lat().to_radians(), b.lat().to_radians());
+        let d = ((q - p) / 2.0).sin().powi(2)
+            + p.cos() * q.cos() * ((b.lon() - a.lon()).to_radians() / 2.0).sin().powi(2);
+        2.0 * EARTH_RADIUS_KM * d.sqrt().asin()
+    }
+
+    #[test]
+    fn a_disc_has_every_corner_on_the_circle_and_is_closed() {
+        let Geometry::Polygon { rings } = disc(kyiv(), 12.0, 48).unwrap() else {
+            panic!("a disc is a polygon");
+        };
+        let corners = rings[0].positions();
+        assert_eq!(corners.len(), 49);
+        assert_eq!(corners.first(), corners.last());
+        for corner in corners {
+            assert!((km(kyiv(), *corner) - 12.0).abs() < 0.001);
+        }
+    }
+
+    #[test]
+    fn a_disc_is_deterministic_and_bounded() {
+        assert_eq!(
+            disc(kyiv(), 8.0, 48).unwrap(),
+            disc(kyiv(), 8.0, 48).unwrap()
+        );
+        for (radius, vertices) in [
+            (0.0, 48),
+            (-1.0, 48),
+            (f64::NAN, 48),
+            (5.0, 7),
+            (5.0, MAX_DISC_VERTICES + 1),
+        ] {
+            assert_eq!(
+                disc(kyiv(), radius, vertices).unwrap_err().code(),
+                "invalid_geometry",
+                "{radius} {vertices}"
+            );
+        }
+    }
+
+    #[test]
+    fn a_disc_covers_the_cells_around_a_place_and_grows_with_its_radius() {
+        let small = cover(&disc(kyiv(), 5.0, 48).unwrap(), res(6), 500).unwrap();
+        let large = cover(&disc(kyiv(), 20.0, 48).unwrap(), res(6), 500).unwrap();
+        assert!(
+            !small.cells.is_empty(),
+            "a small disc never yields an empty cover"
+        );
+        assert!(large.cells.len() > small.cells.len());
+        assert!(large.cells.len() < 60, "{}", large.cells.len());
+        // The cell that holds the center is inside every disc's cover.
+        let centre = cover(&Geometry::point(kyiv()), res(6), 1).unwrap();
+        assert!(large.cells.contains(&centre.cells[0]));
+    }
+
+    #[test]
+    fn expanding_by_one_ring_only_adds_and_stays_sorted() {
+        let base = cover(&disc(kyiv(), 8.0, 48).unwrap(), res(6), 500).unwrap();
+        let wider = expand(&base, 1, 500).unwrap();
+        assert!(wider.cells.len() > base.cells.len());
+        assert!(base.cells.iter().all(|c| wider.cells.contains(c)));
+        let mut sorted = wider.cells.clone();
+        sorted.sort();
+        assert_eq!(sorted, wider.cells);
+        assert_eq!(expand(&base, 0, 500).unwrap(), base);
+    }
+
+    #[test]
+    fn expanding_is_bounded() {
+        let base = cover(&disc(kyiv(), 20.0, 48).unwrap(), res(6), 500).unwrap();
+        assert_eq!(expand(&base, 1, 10).unwrap_err().code(), "cover_too_large");
+    }
+
+    #[test]
+    fn anyone_inside_a_disc_stands_in_an_expanded_cell() {
+        // People at 0.99 x radius in every direction: each one's own cell is in the cover once
+        // it is expanded by a ring, though the cell's center may lie outside the disc.
+        let radius = 12.0;
+        let set = expand(
+            &cover(&disc(kyiv(), radius, 48).unwrap(), res(6), 500).unwrap(),
+            1,
+            500,
+        )
+        .unwrap();
+        for bearing in (0..360).step_by(3) {
+            let b = f64::from(bearing).to_radians();
+            let d = radius * 0.99;
+            let lat = kyiv().lat() + d * b.cos() / 111.19;
+            let lon = kyiv().lon() + d * b.sin() / (111.32 * kyiv().lat().to_radians().cos());
+            let own = cover(&Geometry::point(pos(lon, lat)), res(6), 1).unwrap();
+            assert!(set.cells.contains(&own.cells[0]), "bearing {bearing}");
+        }
     }
 }

@@ -1,0 +1,30 @@
+# © 2026 aiaiaiai · aiaiaiai.org
+# SPDX-License-Identifier: Apache-2.0
+
+[package]
+name = "prism-signal-runtime"
+description = "Stateless JSON/NDJSON runtime for prism-signal.v1"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+publish = false
+
+[lints]
+workspace = true
+
+[[bin]]
+name = "prism-signal-runtime"
+path = "src/main.rs"
+
+[dependencies]
+prism-signal-bridge = { path = "../prism-signal-bridge" }
+prism-signal-core = { path = "../prism-signal-core" }
+prism-signal-fusion = { path = "../prism-signal-fusion" }
+prism-signal-geo = { path = "../prism-signal-geo" }
+prism-signal-normalize = { path = "../prism-signal-normalize" }
+prism-signal-observe = { path = "../prism-signal-observe" }
+prism-signal-protocol = { path = "../prism-signal-protocol" }
+serde_json.workspace = true

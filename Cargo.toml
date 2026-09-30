@@ -3,10 +3,14 @@
 
 [workspace]
 members = [
+  "crates/prism-signal-bridge",
   "crates/prism-signal-core",
+  "crates/prism-signal-fusion",
   "crates/prism-signal-geo",
   "crates/prism-signal-normalize",
   "crates/prism-signal-observe",
+  "crates/prism-signal-protocol",
+  "crates/prism-signal-runtime",
   "crates/prism-signal-source",
   "crates/prism-signal-source-telegram",
   "crates/prism-signal-collect",

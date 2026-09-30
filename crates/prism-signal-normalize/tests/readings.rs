@@ -381,3 +381,60 @@ fn readings_are_deterministic_and_round_trip_through_json() {
     let back: Reading = serde_json::from_str(&json).unwrap();
     assert_eq!(back, first[0]);
 }
+
+#[test]
+fn a_comma_keeps_an_all_clear_to_its_own_words() {
+    // The first two are called off; two more are on their way to Chornomorsk.
+    let readings = read("по первым 2 КАБам минус, еще 2 КАБа подлетают к Черноморску");
+    let clears: Vec<_> = readings
+        .iter()
+        .filter(|r| r.phase == Phase::Cleared)
+        .collect();
+    let threats: Vec<_> = readings
+        .iter()
+        .filter(|r| r.phase == Phase::Threat)
+        .collect();
+    assert_eq!(clears.len(), 1);
+    assert!(
+        clears[0].places.is_empty(),
+        "the all-clear names no place of its own"
+    );
+    assert_eq!(threats.len(), 1);
+    assert_eq!(places(threats[0]), [("Чорноморськ", PlaceRole::Target)]);
+    assert!(threats[0].actionable());
+
+    // The channel's own example of a line that clears one thing and reports another.
+    let mixed = read("минус по мопеду над Одессой, 2 баллистики на Киев");
+    assert_eq!(mixed.len(), 2);
+    assert_eq!(
+        (mixed[0].phase, mixed[0].kind),
+        (Phase::Cleared, Some(HazardKind::Drone))
+    );
+    assert_eq!(places(&mixed[0]), [("Одеса", PlaceRole::Target)]);
+    assert_eq!(
+        (mixed[1].phase, mixed[1].kind),
+        (Phase::Threat, Some(HazardKind::BallisticMissile))
+    );
+    assert_eq!(places(&mixed[1]), [("Київ", PlaceRole::Target)]);
+}
+
+#[test]
+fn a_comma_still_separates_items_of_a_list_when_there_is_no_all_clear() {
+    let readings = read("2 баллистики на Киев, Одессу и Харьков");
+    assert_eq!(readings.len(), 1);
+    assert_eq!(
+        places(&readings[0]),
+        [
+            ("Київ", PlaceRole::Target),
+            ("Одеса", PlaceRole::Target),
+            ("Харків", PlaceRole::Target)
+        ]
+    );
+}
+
+#[test]
+fn an_all_clear_applies_to_a_list_of_places_within_its_own_comma_segment() {
+    let readings = read("по мопедам на Николаев, Одессу и Киевскую область минуса");
+    assert_eq!(readings.len(), 1);
+    assert_eq!(readings[0].phase, Phase::Cleared);
+}

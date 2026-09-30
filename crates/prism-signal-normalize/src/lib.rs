@@ -238,7 +238,8 @@ impl Normalizer {
         if text.chars().count() > self.max_text_chars {
             return Vec::new();
         }
-        let tokens = tokenize(text);
+        let mut tokens = tokenize(text);
+        split_at_commas_around_all_clears(&self.lexicon, &mut tokens);
         let mut clauses = self.clauses(&tokens);
         carry_kinds_forward(&mut clauses);
         clauses
@@ -338,6 +339,46 @@ impl Normalizer {
             return role_at[j];
         }
         None
+    }
+}
+
+/// In a sentence that holds an all-clear word, a comma that starts a new statement ends the clause.
+///
+/// `по первым 2 КАБам минус, еще 2 КАБа подлетают к Черноморску` calls off the first two and
+/// reports two more. Read as one clause it calls off the threat at Chornomorsk, which is false.
+/// Split at the comma, the all-clear keeps to the words it is written with and the rest is a
+/// threat.
+///
+/// A comma starts a new statement when what follows it, up to the next comma, names a hazard of
+/// its own. A comma that only continues a list does not: in `по мопедам на Николаев, Одессу и
+/// Киевскую область минуса` the all-clear belongs to every city in the list, and splitting there
+/// would turn Mykolaiv into a threat right after it was called off.
+///
+/// Where the two readings differ, the narrow one is the safe one: an all-clear that reaches too
+/// little leaves a threat to lapse on its window, and one that reaches too far hides a live one.
+fn split_at_commas_around_all_clears(lexicon: &Lexicon, tokens: &mut [Token]) {
+    let mut start = 0;
+    while start < tokens.len() {
+        let end = tokens
+            .iter()
+            .enumerate()
+            .skip(start + 1)
+            .find(|(_, t)| t.barrier_before)
+            .map_or(tokens.len(), |(i, _)| i);
+        if (start..end).any(|i| lexicon.is_cleared_at(tokens, i)) {
+            let commas: Vec<usize> = (start + 1..end)
+                .filter(|&i| tokens[i].comma_before)
+                .collect();
+            for (n, &comma) in commas.iter().enumerate() {
+                let segment_end = commas.get(n + 1).copied().unwrap_or(end);
+                let names_a_hazard =
+                    (comma..segment_end).any(|i| lexicon.kind(&tokens[i].folded).is_some());
+                if names_a_hazard {
+                    tokens[comma].barrier_before = true;
+                }
+            }
+        }
+        start = end;
     }
 }
 

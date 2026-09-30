@@ -6,6 +6,7 @@
 //! ```text
 //! prism-signal-collect telegram <channel> backfill [--max-pages N] [--delay-ms MS]
 //! prism-signal-collect telegram <channel> follow   [--after ID] [--interval-secs S] [--delay-ms MS]
+//! prism-signal-collect telegram <channel> poll     [--after ID] [--max-pages N] [--delay-ms MS]
 //! ```
 //!
 //! stdout carries one `Evidence` JSON object per line and nothing else; progress and errors go
@@ -24,9 +25,13 @@ use tokio::io::{AsyncWriteExt, Stdout};
 
 const USAGE: &str = "usage:
   prism-signal-collect telegram <channel> backfill [--max-pages N] [--delay-ms MS]
-  prism-signal-collect telegram <channel> follow [--after ID] [--interval-secs S] [--delay-ms MS]";
+  prism-signal-collect telegram <channel> follow [--after ID] [--interval-secs S] [--delay-ms MS]
+  prism-signal-collect telegram <channel> poll [--after ID] [--max-pages N] [--delay-ms MS]";
 
 const MAX_ATTEMPTS: u32 = 5;
+
+/// Pages one `poll` reads at most, so a source far ahead of the cursor cannot hold a scheduler.
+const DEFAULT_POLL_PAGES: u64 = 10;
 
 #[derive(Debug)]
 enum Mode {
@@ -36,6 +41,10 @@ enum Mode {
     Follow {
         after: Option<String>,
         interval: Duration,
+    },
+    Poll {
+        after: Option<String>,
+        max_pages: u64,
     },
 }
 
@@ -57,6 +66,7 @@ fn parse_args(raw: &[String]) -> Result<Args, String> {
         ChannelName::parse(channel).map_err(|_| format!("invalid channel `{channel}`"))?;
 
     let mut max_pages = None;
+    let mut poll_pages = DEFAULT_POLL_PAGES;
     let mut after = None;
     let mut interval = Duration::from_secs(60);
     let mut delay = Duration::from_millis(1500);
@@ -72,7 +82,8 @@ fn parse_args(raw: &[String]) -> Result<Args, String> {
         };
         match (mode.as_str(), flag.as_str()) {
             ("backfill", "--max-pages") => max_pages = Some(number()?),
-            ("follow", "--after") => after = Some(number()?.to_string()),
+            ("follow" | "poll", "--after") => after = Some(number()?.to_string()),
+            ("poll", "--max-pages") => poll_pages = number()?.max(1),
             ("follow", "--interval-secs") => interval = Duration::from_secs(number()?.max(10)),
             (_, "--delay-ms") => delay = Duration::from_millis(number()?),
             _ => return Err(format!("unknown flag `{flag}` for `{mode}`\n{USAGE}")),
@@ -82,6 +93,10 @@ fn parse_args(raw: &[String]) -> Result<Args, String> {
     let mode = match mode.as_str() {
         "backfill" => Mode::Backfill { max_pages },
         "follow" => Mode::Follow { after, interval },
+        "poll" => Mode::Poll {
+            after,
+            max_pages: poll_pages,
+        },
         other => return Err(format!("unknown mode `{other}`\n{USAGE}")),
     };
     Ok(Args {
@@ -203,6 +218,48 @@ async fn follow(
     }
 }
 
+/// Reads what is new, once, and exits: the mode a scheduler runs.
+///
+/// Without `--after` it reads the newest page. With it, every page after that post, up to
+/// `max_pages`. The newest post id read is printed to stderr as `newest=<id>`, and is what the
+/// next poll passes as `--after`. Nothing is kept between runs: the caller owns the cursor.
+async fn poll(
+    source: &dyn EvidenceSource,
+    out: &mut Stdout,
+    after: Option<String>,
+    max_pages: u64,
+    delay: Duration,
+) -> Result<(), String> {
+    let mut newest: Option<Cursor> = after.clone().map(Cursor::new);
+    let mut request = match after {
+        Some(after) => PageRequest::After(Cursor::new(after)),
+        None => PageRequest::Latest,
+    };
+    let mut items = 0usize;
+    for _ in 0..max_pages {
+        let page = read_with_retry(source, request.clone())
+            .await
+            .map_err(|e| e.to_string())?;
+        emit(out, &page.evidence).await.map_err(|e| e.to_string())?;
+        items += page.evidence.len();
+        let Some(page_newest) = page.newest else {
+            break;
+        };
+        let advanced = newest.as_ref() != Some(&page_newest);
+        newest = Some(page_newest.clone());
+        if !advanced || matches!(request, PageRequest::Latest) {
+            break;
+        }
+        request = PageRequest::After(page_newest);
+        tokio::time::sleep(delay).await;
+    }
+    eprintln!(
+        "{items} items, newest={}",
+        newest.as_ref().map_or("none", Cursor::as_str)
+    );
+    Ok(())
+}
+
 async fn run(args: Args) -> Result<(), String> {
     let client = reqwest::Client::builder()
         .user_agent(concat!("prism-signal-collect/", env!("CARGO_PKG_VERSION")))
@@ -216,6 +273,9 @@ async fn run(args: Args) -> Result<(), String> {
         Mode::Backfill { max_pages } => backfill(&source, &mut out, max_pages, args.delay).await,
         Mode::Follow { after, interval } => {
             follow(&source, &mut out, after, interval, args.delay).await
+        }
+        Mode::Poll { after, max_pages } => {
+            poll(&source, &mut out, after, max_pages, args.delay).await
         }
     }
 }
@@ -260,6 +320,44 @@ mod tests {
         assert!(matches!(a.mode, Mode::Backfill { max_pages: Some(3) }));
         let a = args(&["telegram", "vanek_nikolaev", "follow", "--after", "42"]).unwrap();
         assert!(matches!(a.mode, Mode::Follow { after: Some(ref id), .. } if id == "42"));
+    }
+
+    #[test]
+    fn parses_poll_with_and_without_a_cursor() {
+        let a = args(&["telegram", "vanek_nikolaev", "poll"]).unwrap();
+        assert!(matches!(
+            a.mode,
+            Mode::Poll {
+                after: None,
+                max_pages: 10
+            }
+        ));
+        let a = args(&[
+            "telegram",
+            "vanek_nikolaev",
+            "poll",
+            "--after",
+            "43231",
+            "--max-pages",
+            "3",
+            "--delay-ms",
+            "0",
+        ])
+        .unwrap();
+        assert!(
+            matches!(a.mode, Mode::Poll { after: Some(ref id), max_pages: 3 } if id == "43231")
+        );
+        assert_eq!(a.delay, Duration::ZERO);
+        assert!(
+            args(&[
+                "telegram",
+                "vanek_nikolaev",
+                "poll",
+                "--interval-secs",
+                "10"
+            ])
+            .is_err()
+        );
     }
 
     #[test]

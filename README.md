@@ -42,6 +42,8 @@ The runtime is stateless. The hub supplies the observation window with every req
 | [`two-way flows`](docs/flows.md) | Inbound evidence, outbound assessments, feedback, and the `0x1` bridge |
 | [`Telegram source`](docs/sources/telegram.md) | Public channel preview adapter and the collector |
 | [`normalization`](docs/normalization.md) | Post text to hazard readings, place roles, the gazetteer, measured coverage |
+| [`fusion`](docs/fusion.md) | Assessments, lifecycle, the narrow retraction rule, measured results |
+| [`two readers`](docs/readers.md) | `observe` and `normalize` compared on the same posts |
 | [`air-threat relay`](docs/air-alerts.md) | The first product: relay one channel's hazard reports by location; owners, gaps, open decisions |
 | [`protocol`](docs/protocol.md) | `prism-signal.v1` draft |
 | [`ecosystem`](docs/ecosystem.md) | Proposed rows for `prism/docs/ecosystem.md` and the dependency rules |
@@ -57,6 +59,9 @@ The runtime is stateless. The hub supplies the observation window with every req
 | `prism-signal-observe` | Rule-based channel text to located observations, with a gazetteer |
 | `prism-signal-source` | Evidence source port |
 | `prism-signal-source-telegram` | Telegram public channel preview adapter |
+| `prism-signal-bridge` | Readings into `SignalObservation`s, with roles and footprints |
+| `prism-signal-fusion` | Observations into assessments with a lifecycle |
+| `prism-signal-protocol`, `prism-signal-runtime` | The `prism-signal.v1` wire and its stateless process |
 | `prism-signal-normalize` | Hazard readings from post text: kind, phase, and located places with roles |
 | `prism-signal-collect` | NDJSON collector CLI |
 

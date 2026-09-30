@@ -24,9 +24,16 @@ flowchart TD
     Fusion --> Geo
     Source["prism-signal-source"] --> Core
     Normalize["prism-signal-normalize"] --> Core
+    Observe["prism-signal-observe"] --> Core
+    Bridge["prism-signal-bridge"] --> Normalize
+    Bridge --> Geo
+    Bridge --> Core
+    Protocol --> Fusion
+    Protocol --> Geo
     Runtime["prism-signal-runtime"] --> Protocol
     Runtime --> Fusion
-    Runtime --> Source
+    Runtime --> Bridge
+    Runtime --> Observe
     Runtime --> Normalize
     Testkit["prism-signal-testkit"] --> Source
 ```

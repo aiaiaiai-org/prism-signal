@@ -336,6 +336,23 @@ pub struct ObservationProvenance {
     /// Identifier of the gazetteer entry that gave the geometry, when one did.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub place_id: Option<String>,
+    /// Display name of that place, so a consumer can name it without holding the gazetteer.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub place_name: Option<String>,
+    /// How the text relates the place to the hazard, when the reader can tell. Absent means the
+    /// reader does not distinguish, and a consumer must treat the place as the hazard's target.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub place_role: Option<PlaceRole>,
+}
+
+/// How a text relates a place to a hazard, for readers that tell.
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum PlaceRole {
+    /// The hazard is heading for the place or is over it.
+    Target,
+    /// The hazard is passing the place or near it, without being aimed at it.
+    Via,
 }
 
 /// One normalized, located piece of evidence. Immutable.
