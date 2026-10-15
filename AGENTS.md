@@ -176,6 +176,48 @@ that cannot yet have changed.
 Never report repository state, successful writes, merges, CI results, or
 deployment results without evidence from the corresponding operation.
 
+### Shared-account co-authorship
+
+Commit as the GitHub account that actually did the work, identified by its
+account ID:
+
+| GitHub account | Account ID | Git author (ID-based noreply)               |
+| -------------- | ---------- | ------------------------------------------- |
+| `0x0sky`       | 75973992   | `75973992+0x0sky@users.noreply.github.com`  |
+| `x0skai`       | 300452669  | `300452669+x0skai@users.noreply.github.com` |
+
+Tool credit is separate from account credit and applies only to real
+contribution to the commit:
+
+- `Assisted-by: OpenAI Codex` when Codex contributed.
+- `Co-authored-by: Claude <noreply@anthropic.com>` when Claude contributed.
+
+Rules:
+
+- Add the other account as `Co-authored-by: <login> <<ID>+<login>@users.noreply.github.com>`
+  only when it contributed code, tests, documentation or an incorporated patch
+  to that exact commit. A review, approval, prompt or account ownership alone
+  does not qualify.
+- Solo authorship is normal. A commit with no real second contributor has no
+  account co-author. Do not add one for an achievement or to satisfy a check.
+- Never add the primary author as its own co-author, and never duplicate a
+  trailer.
+- Put trailers in the final paragraph of the commit message, one per line.
+- Never label a commit as an unknown author to avoid this rule. If the connected
+  GitHub API cannot author as the correct account, commit from a shell with the
+  correct repository-local identity. If no such shell exists, state the
+  limitation in the PR and do not claim the attribution.
+- The commit-attribution check validates identities, trailer format, and
+  duplicate or self credit. It cannot prove that a contribution happened; the
+  author and reviewers establish that.
+- Before merge, inspect the pushed commits: author account ID, trailers and
+  co-author IDs. A comment, review or PR body is not a substitute.
+- For squash merges, write the final message explicitly so genuine co-authors
+  and tool credits survive. Do not assume GitHub preserves them.
+- Do not manufacture commits, rewrite merged history, or change merge methods to
+  create credit. Signature verification and achievement status are reported
+  separately.
+
 ### Reporting
 
 Report outcomes, not tool choreography.
@@ -188,3 +230,5 @@ Do not ask for confirmation when this policy already grants authority to
 continue. If the task cannot be completed, identify the concrete blocker and
 the exact state reached instead of giving a generic access or tooling
 disclaimer.
+
+<!-- © 2026 aiaiaiai · aiaiaiai.org -->
