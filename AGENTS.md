@@ -186,11 +186,17 @@ account ID:
 | `0x0sky`       | 75973992   | `75973992+0x0sky@users.noreply.github.com`  |
 | `x0skai`       | 300452669  | `300452669+x0skai@users.noreply.github.com` |
 
-Tool credit is separate from account credit and applies only to real
-contribution to the commit:
+AI-tool co-authorship is separate from GitHub account credit. Credit only
+substantive work incorporated into the exact commit:
 
-- `Assisted-by: OpenAI Codex` when Codex contributed.
+- `Co-authored-by: Codex <codex@openai.com>` when OpenAI Codex contributed.
 - `Co-authored-by: Claude <noreply@anthropic.com>` when Claude contributed.
+
+`Assisted-by: OpenAI Codex` does **not** produce GitHub co-authorship and must
+not replace the Codex `Co-authored-by` trailer. In particular, a commit authored
+by `0x0sky` with genuine Codex changes must contain the Codex trailer in the
+**commit message**, not only in a pull request description. Do not add tool
+co-authors when that tool did not contribute to the commit.
 
 Rules:
 
@@ -212,8 +218,11 @@ Rules:
   author and reviewers establish that.
 - Before merge, inspect the pushed commits: author account ID, trailers and
   co-author IDs. A comment, review or PR body is not a substitute.
-- For squash merges, write the final message explicitly so genuine co-authors
-  and tool credits survive. Do not assume GitHub preserves them.
+- For squash merges, prepare the final message explicitly from verified source
+  contributions. Preserve genuine Codex/Claude co-authors; never repeat the
+  resulting squash commit's primary author as a co-author. Verify the actual
+  merged commit author and trailers afterwards: GitHub does not necessarily
+  preserve source commit messages. A PR body or review does not count.
 - Do not manufacture commits, rewrite merged history, or change merge methods to
   create credit. Signature verification and achievement status are reported
   separately.
