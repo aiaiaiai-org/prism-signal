@@ -78,47 +78,35 @@ the artifact changed, the relevant environment state changed, the platform
 requires it, or the repository documents why. Keep a repeat narrow and
 different from the earlier check.
 
-### Shared-account co-authorship
+### Commit attribution
 
-Commit as the GitHub account that actually did the work, identified by its
-account ID:
+One rule, no judgement calls:
 
-| GitHub account | Account ID | Git author (ID-based noreply)               |
-| -------------- | ---------- | ------------------------------------------- |
-| `0x0sky`       | 75973992   | `75973992+0x0sky@users.noreply.github.com`  |
-| `x0skai`       | 300452669  | `300452669+x0skai@users.noreply.github.com` |
+| Who                 | Identity in Git                                     |
+| ------------------- | --------------------------------------------------- |
+| Claude Code (agent) | `x0skai <x0skai@aiaiaiai.org>`                      |
+| Account owner       | `0x0sky <75973992+0x0sky@users.noreply.github.com>` |
 
-Tool credit is separate from account credit and applies only to real
-contribution to the commit:
-
-- `Assisted-by: OpenAI Codex` when Codex contributed.
-- `Co-authored-by: Claude <noreply@anthropic.com>` when Claude contributed.
-
-Rules:
-
-- Add the other account as `Co-authored-by: <login> <<ID>+<login>@users.noreply.github.com>`
-  only when it contributed code, tests, documentation or an incorporated patch
-  to that exact commit. A review, approval, prompt or account ownership alone
-  does not qualify.
-- Solo authorship is normal. A commit with no real second contributor has no
-  account co-author. Do not add one for an achievement or to satisfy a check.
-- Never add the primary author as its own co-author, and never duplicate a
-  trailer.
-- Put trailers in the final paragraph of the commit message, one per line.
-- Never label a commit as an unknown author to avoid this rule. If the connected
-  GitHub API cannot author as the correct account, commit from a shell with the
-  correct repository-local identity. If no such shell exists, state the
-  limitation in the PR and do not claim the attribution.
-- The commit-attribution check validates identities, trailer format, and
-  duplicate or self credit. It cannot prove that a contribution happened; the
-  author and reviewers establish that.
-- Before merge, inspect the pushed commits: author account ID, trailers and
-  co-author IDs. A comment, review or PR body is not a substitute.
-- For squash merges, write the final message explicitly so genuine co-authors
-  and tool credits survive. Do not assume GitHub preserves them.
-- Do not manufacture commits, rewrite merged history, or change merge methods to
-  create credit. Signature verification and achievement status are reported
-  separately.
+- **Claude Code commits only as `x0skai <x0skai@aiaiaiai.org>`**, as author
+  and committer. That is the session's git identity; never override it, and
+  never commit as `0x0sky`.
+- **End every Claude Code commit with**
+  `Co-authored-by: Claude <noreply@anthropic.com>` whenever Claude wrote any
+  of it. Add `Co-authored-by: Codex <codex@openai.com>` only when Codex
+  contributed substantive changes to that exact commit. `Assisted-by` is not
+  GitHub co-authorship.
+- **Claude Code never adds `0x0sky` as a co-author.** When `0x0sky`
+  contributes to a commit, `0x0sky` adds its own `Co-authored-by` trailer.
+- Trailers go in the final paragraph, one per line, never duplicated, and the
+  commit's author never appears among its own co-authors.
+- **Squash merges:** GitHub makes the PR's author the squash commit's author.
+  Write the final message explicitly: keep genuine Claude and Codex co-author
+  trailers from the branch, plus credited account contributors (only for
+  incorporated work). Never repeat the squash author among its co-authors.
+  Verify the actual merged commit's author and trailer lines afterwards.
+- Never rewrite merged history, manufacture commits or change merge methods
+  to create credit. The commit-attribution check validates identities and
+  trailer format; it cannot prove a contribution happened.
 
 ### Efficiency
 
