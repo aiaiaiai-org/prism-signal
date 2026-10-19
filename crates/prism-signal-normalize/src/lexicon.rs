@@ -153,6 +153,17 @@ impl Lexicon {
             .map(|(kind, _)| *kind)
     }
 
+    /// Reviewed shorthand is scoped to its source; ordinary adjectives are not drone names.
+    pub fn kind_for_source(&self, word: &str, source: &str) -> Option<HazardKind> {
+        self.kind(word).or_else(|| match (source, word) {
+            ("telegram.channel:war_monitor", "бр") => Some(HazardKind::BallisticMissile),
+            ("telegram.channel:monitorwarr", "реактив" | "реактиви" | "реактивив") => {
+                Some(HazardKind::Drone)
+            }
+            _ => None,
+        })
+    }
+
     /// Whether the word at `tokens[at]` says a reported threat is over.
     ///
     /// A negator directly before it (`до отбоя`) or within two words after it (`отбоя пока нет`)
