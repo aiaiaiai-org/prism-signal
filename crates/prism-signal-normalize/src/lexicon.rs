@@ -155,7 +155,7 @@ impl Lexicon {
 
     /// Reviewed shorthand is scoped to its source; ordinary adjectives are not drone names.
     pub fn kind_for_source(&self, word: &str, source: &str) -> Option<HazardKind> {
-        self.kind(word).or_else(|| match (source, word) {
+        self.kind(word).or(match (source, word) {
             ("telegram.channel:war_monitor", "бр") => Some(HazardKind::BallisticMissile),
             ("telegram.channel:monitorwarr", "реактив" | "реактиви" | "реактивив") => {
                 Some(HazardKind::Drone)
