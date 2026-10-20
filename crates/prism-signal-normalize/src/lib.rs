@@ -239,8 +239,8 @@ impl Normalizer {
             return Vec::new();
         }
         let mut tokens = tokenize(text);
-        split_at_commas_around_all_clears(&self.lexicon, &mut tokens);
-        let mut clauses = self.clauses(&tokens);
+        split_at_commas_around_all_clears(&self.lexicon, &mut tokens, evidence.source_id.as_str());
+        let mut clauses = self.clauses(&tokens, evidence.source_id.as_str());
         carry_kinds_forward(&mut clauses);
         clauses
             .into_iter()
@@ -248,7 +248,7 @@ impl Normalizer {
             .collect()
     }
 
-    fn clauses(&self, tokens: &[Token]) -> Vec<Clause> {
+    fn clauses(&self, tokens: &[Token], source: &str) -> Vec<Clause> {
         // What each word turned out to be, so a later word can inherit from an earlier one.
         let mut role_at: Vec<Option<PlaceRole>> = vec![None; tokens.len()];
         let mut done = Vec::new();
@@ -285,7 +285,7 @@ impl Normalizer {
                 i += len;
                 continue;
             }
-            if let Some(kind) = self.lexicon.kind(&token.folded) {
+            if let Some(kind) = self.lexicon.kind_for_source(&token.folded, source) {
                 clause.kinds.insert(kind);
             } else if self.lexicon.is_cleared_at(tokens, i) {
                 clause.cleared_word = true;
@@ -356,7 +356,7 @@ impl Normalizer {
 ///
 /// Where the two readings differ, the narrow one is the safe one: an all-clear that reaches too
 /// little leaves a threat to lapse on its window, and one that reaches too far hides a live one.
-fn split_at_commas_around_all_clears(lexicon: &Lexicon, tokens: &mut [Token]) {
+fn split_at_commas_around_all_clears(lexicon: &Lexicon, tokens: &mut [Token], source: &str) {
     let mut start = 0;
     while start < tokens.len() {
         let end = tokens
@@ -371,8 +371,8 @@ fn split_at_commas_around_all_clears(lexicon: &Lexicon, tokens: &mut [Token]) {
                 .collect();
             for (n, &comma) in commas.iter().enumerate() {
                 let segment_end = commas.get(n + 1).copied().unwrap_or(end);
-                let names_a_hazard =
-                    (comma..segment_end).any(|i| lexicon.kind(&tokens[i].folded).is_some());
+                let names_a_hazard = (comma..segment_end)
+                    .any(|i| lexicon.kind_for_source(&tokens[i].folded, source).is_some());
                 if names_a_hazard {
                     tokens[comma].barrier_before = true;
                 }
