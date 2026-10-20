@@ -68,7 +68,10 @@ fn public_excerpts_create_located_signals_with_original_provenance() {
         assert_eq!(signal["stance"], "threat");
         assert_eq!(signal["source_id"], format!("telegram.channel:{channel}"));
         assert_eq!(signal["provenance"]["place_name"], place);
-        assert_eq!(signal["provenance"]["evidence_id"], format!("{channel}/{id}"));
+        assert_eq!(
+            signal["provenance"]["evidence_id"],
+            format!("{channel}/{id}")
+        );
         assert_eq!(
             signal["provenance"]["evidence_url"],
             format!("https://t.me/{channel}/{id}")
