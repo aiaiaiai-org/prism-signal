@@ -530,7 +530,10 @@ pub fn assess(
                     first_at: at,
                     valid_until: valid_until(observation),
                     kinds: BTreeSet::from([observation.kind]),
-                    active_sources: BTreeMap::from([(observation.source_id.clone(), valid_until(observation))]),
+                    active_sources: BTreeMap::from([(
+                        observation.source_id.clone(),
+                        valid_until(observation),
+                    )]),
                     evidence: vec![evidence_ref(observation)],
                     revision: 1,
                     seq: 1,
@@ -560,7 +563,9 @@ pub fn assess(
                             .is_some_and(|until| *until >= at)
                 });
                 if hit {
-                    let episode = open.get_mut(&slot).expect("source was found in this episode");
+                    let episode = open
+                        .get_mut(&slot)
+                        .expect("source was found in this episode");
                     episode.active_sources.retain(|_, until| *until >= at);
                     episode.active_sources.remove(&observation.source_id);
                     if episode.active_sources.is_empty() {
