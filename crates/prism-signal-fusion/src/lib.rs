@@ -21,7 +21,7 @@
 //! | `issued` | the first threat observation of an episode |
 //! | `superseded` | a later post reports the same hazard at the same place while it is valid; the window is extended |
 //! | `expired` | the window ran out with no newer report |
-//! | `retracted` | the source calls that hazard off at that place |
+//! | `retracted` | all still-live source reports have been explicitly cleared |
 //!
 //! After a retraction or expiry the next threat starts a new episode with a new id.
 //!
@@ -33,6 +33,8 @@
 //!   all-clear words;
 //! - it applies to the **same class at the same place**. Overlapping cells are not enough: an
 //!   all-clear for Brovary must not end the alert for Kyiv;
+//! - it affects only an active report from the same source; a different source cannot clear it;
+//! - the episode retracts only once **no live source** still reports the hazard;
 //! - it applies only to episodes that started before it, and to episodes still valid;
 //! - it is ignored when the same post also reports that class at that place as a threat.
 //!
@@ -206,10 +208,16 @@ pub struct Assessment {
     pub status: Status,
     /// Starts at 1 and grows with each `superseded` event.
     pub revision: u32,
-    /// A band, never a percentage: `moderate` for one source, `high` for two or more.
+    /// A band, never a percentage: `moderate` for one live source, `high` for two or more.
     pub likelihood: ConfidenceBand,
-    /// Distinct sources behind it.
+    /// Distinct channel identities with unexpired, uncleared reports; not verified independence.
     pub corroboration_count: u32,
+    /// Channel IDs whose reports remain live at the evaluation time (sorted, unique).
+    ///
+    /// This is source status, NOT an official all-clear, calibrated risk or proof that reports
+    /// are independent. Defaulting on deserialize preserves older fusion.v1 assessments.
+    #[serde(default)]
+    pub active_sources: Vec<SourceId>,
     /// The evidence, oldest first.
     pub evidence: Vec<EvidenceRef>,
 }
@@ -317,7 +325,8 @@ struct Episode {
     first_at: OffsetDateTime,
     valid_until: OffsetDateTime,
     kinds: BTreeSet<HazardKind>,
-    sources: BTreeSet<SourceId>,
+    /// Per-source expiry; only live sources can be cleared and corroborate a threat.
+    active_sources: BTreeMap<SourceId, OffsetDateTime>,
     evidence: Vec<EvidenceRef>,
     revision: u32,
     seq: u32,
@@ -330,8 +339,13 @@ impl Episode {
             .any(|e| &e.source_id == source && &e.evidence_id == evidence)
     }
 
-    fn finish(self, status: Status, policy: &FusionPolicy) -> Assessment {
-        let likelihood = if self.sources.len() >= 2 {
+    fn finish(self, status: Status, policy: &FusionPolicy, as_of: OffsetDateTime) -> Assessment {
+        let active_sources: Vec<SourceId> = self
+            .active_sources
+            .into_iter()
+            .filter_map(|(source, until)| (until > as_of).then_some(source))
+            .collect();
+        let likelihood = if active_sources.len() >= 2 {
             ConfidenceBand::High
         } else {
             ConfidenceBand::Moderate
@@ -353,7 +367,8 @@ impl Episode {
             status,
             revision: self.revision,
             likelihood,
-            corroboration_count: u32::try_from(self.sources.len()).unwrap_or(u32::MAX),
+            corroboration_count: u32::try_from(active_sources.len()).unwrap_or(u32::MAX),
+            active_sources,
             evidence: self.evidence,
         }
     }
@@ -460,8 +475,16 @@ pub fn assess(
                     if at <= episode.valid_until {
                         episode.aimed |= is_aimed(observation);
                         episode.kinds.insert(observation.kind);
-                        episode.sources.insert(observation.source_id.clone());
-                        episode.valid_until = episode.valid_until.max(valid_until(observation));
+                        // Stale support is not revived by a different source's later report.
+                        episode.active_sources.retain(|_, until| *until >= at);
+                        episode
+                            .active_sources
+                            .insert(observation.source_id.clone(), valid_until(observation));
+                        episode.valid_until = *episode
+                            .active_sources
+                            .values()
+                            .max()
+                            .expect("the new report remains active");
                         if !episode.has(&observation.source_id, &observation.provenance.evidence_id)
                         {
                             episode.evidence.push(evidence_ref(observation));
@@ -488,7 +511,7 @@ pub fn assess(
                             evidence: None,
                             reason: None,
                         });
-                        closed.push(episode.finish(Status::Expired, policy));
+                        closed.push(episode.finish(Status::Expired, policy, at));
                     }
                 }
                 let id = format!(
@@ -514,7 +537,10 @@ pub fn assess(
                     first_at: at,
                     valid_until: valid_until(observation),
                     kinds: BTreeSet::from([observation.kind]),
-                    sources: BTreeSet::from([observation.source_id.clone()]),
+                    active_sources: BTreeMap::from([(
+                        observation.source_id.clone(),
+                        valid_until(observation),
+                    )]),
                     evidence: vec![evidence_ref(observation)],
                     revision: 1,
                     seq: 1,
@@ -533,11 +559,24 @@ pub fn assess(
                 if contradicted(item) {
                     continue;
                 }
-                // Same class, same place, still valid. Observations are handled in time order,
-                // so an all-clear can only meet an episode that has already started.
-                let hit = open.get(&slot).is_some_and(|e| at <= e.valid_until);
+                // Only the reporting source may clear its still-live contribution.
+                // An unknown source or a source whose report already expired cannot retract
+                // another channel's observations.
+                let hit = open.get(&slot).is_some_and(|episode| {
+                    at <= episode.valid_until
+                        && episode
+                            .active_sources
+                            .get(&observation.source_id)
+                            .is_some_and(|until| *until >= at)
+                });
                 if hit {
-                    if let Some(mut episode) = open.remove(&slot) {
+                    let episode = open
+                        .get_mut(&slot)
+                        .expect("source was found in this episode");
+                    episode.active_sources.retain(|_, until| *until >= at);
+                    episode.active_sources.remove(&observation.source_id);
+                    if episode.active_sources.is_empty() {
+                        let mut episode = open.remove(&slot).expect("episode is still open");
                         episode.seq += 1;
                         events.push(AssessmentEvent {
                             assessment_id: episode.id.clone(),
@@ -547,7 +586,14 @@ pub fn assess(
                             evidence: Some(evidence_ref(observation)),
                             reason: Some(RetractionReason::SourceAllClear),
                         });
-                        closed.push(episode.finish(Status::Retracted, policy));
+                        closed.push(episode.finish(Status::Retracted, policy, at));
+                    } else {
+                        // A cleared source cannot extend the remaining hazard's TTL.
+                        episode.valid_until = *episode
+                            .active_sources
+                            .values()
+                            .max()
+                            .expect("at least one other source remains live");
                     }
                 }
             }
@@ -564,9 +610,9 @@ pub fn assess(
                 evidence: None,
                 reason: None,
             });
-            closed.push(episode.finish(Status::Expired, policy));
+            closed.push(episode.finish(Status::Expired, policy, now));
         } else {
-            closed.push(episode.finish(Status::Active, policy));
+            closed.push(episode.finish(Status::Active, policy, now));
         }
     }
 

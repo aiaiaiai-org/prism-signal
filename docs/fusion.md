@@ -17,8 +17,9 @@ One assessment is one *episode* of one *class* of hazard at one *place*: "drones
 | `status` | `active`, `expired`, or `retracted`, as of the evaluation time |
 | `revision` | grows with every renewal |
 | `proximity` | `target` when any report aims the hazard at the place, or the reader does not say; `nearby` only when every report says it is passing or near. A consumer may warn about `target` and, if the person asked, about `nearby` |
-| `likelihood`, `corroboration_count` | a band, never a percentage: `moderate` for one source, `high` for two or more |
-| `evidence` | the reports behind it, oldest first, each with its public URL |
+| `likelihood`, `corroboration_count` | a legacy band and count of distinct channel identities still reporting the hazard; **not calibrated probability, independent confirmation, or measured local risk** |
+| `active_sources` | sorted unique channel IDs with unexpired, uncleared reports **as of evaluation time**; `[]` after a fully retracted or expired episode |
+| `evidence` | historical *threat reports* belonging to the episode, including sources that later cleared or expired; source clears remain visible in lifecycle events |
 
 It is a proposal. Whether to tell anyone is the consumer's decision.
 
@@ -37,9 +38,9 @@ The reader decides how big a place is. `prism-signal-bridge` draws each place as
 | `issued` | the first threat observation of an episode |
 | `superseded` | a later post reports the same hazard at the same place while the assessment is valid; the window is extended |
 | `expired` | the window ran out with no newer report. Effective when it ran out, not when it was noticed |
-| `retracted` | the source calls that hazard off at that place |
+| `retracted` | all still-live source reports have been explicitly cleared |
 
-`(assessment_id, seq)` is unique and never reused, so a consumer applies events idempotently. Events carry the evidence that caused them and an `effective_at` derived from the evidence or the window, never from a clock. After a retraction or an expiry the next threat starts a new episode with a new id.
+`(assessment_id, seq)` is unique and never reused, so a consumer applies events idempotently. A source-scoped clear with other sources still active is *not* a retraction event. Episode IDs and the public `fusion.v1` envelope remain unchanged by this safety fix. Events carry the evidence that caused them and an `effective_at` derived from the evidence or the window, never from a clock. After a retraction or an expiry the next threat starts a new episode with a new id.
 
 An `expired` event is only produced once the evaluation time has passed `valid_until`. Evaluating an hour earlier gives an active assessment and no `expired` event; the window is what a consumer supplies, and the events are what that window implies.
 
@@ -48,12 +49,18 @@ An `expired` event is only produced once the evaluation time has passed `valid_u
 A false all-clear is the worst thing this layer can produce. A retraction is deliberately narrow:
 
 1. It needs an explicit `clear` observation, which the readers only produce from explicit all-clear words.
-2. It applies to the **same class at the same place**. Overlapping cells are not enough: an all-clear for Brovary must not end the alert for Kyiv, whose people may still be in danger. A test pins it.
-3. It applies only to an episode still valid when the all-clear was reported, and never to a later threat.
-4. It is ignored when its own post also reports that class at that place as a threat.
+2. It applies to the **same class at the same place** and only to the reporting source. Overlapping cells are not enough; nor is a different channel's clear.
+3. It removes only that channel's still-unexpired report. Retract only when no source remains live. A fresh report can reactivate a source inside the same episode, and every source has its own expiry. An unknown-source clear does nothing.
+4. It is ignored when its own post also reports that class at that place as a threat. An expired source's late clear cannot affect other channels.
 5. An all-clear that names no place, or no kind, is not evidence this layer can use. The threat it meant to end lapses on its window instead.
 
 Point 5 has a price. On 495 live posts the reader found 81 all-clear readings; 13 could be located to a kind and a place and 10 of those ended an assessment. The rest, mostly `минус по всем этим мопедам`, end nothing, and the alert lapses on its window (30 minutes for drones, 15 for bombs, 20 for missiles). A missed all-clear leaves a threat to lapse; a misapplied one hides a live one, and the second is the worse failure.
+
+**A retraction is not an official air-raid alert cancellation**, and neither expiry nor
+a missing report means that civilians are safe. The source count only says how
+many channel IDs currently carry a live report; channels can repeat the same
+original message. An app must not turn `high` into a probability or imply that
+an official warning was issued or lifted.
 
 **A consumer must not send "all clear" on a retraction alone.** If another active assessment of the same class covers the person's cell, they are still in danger and the retraction does not concern them.
 
@@ -77,4 +84,5 @@ The validity windows are rounded up from that data: 90th percentile of the time 
 - Regions: a report about an oblast reaches nobody. Regions need boundaries, not points.
 - A second policy. `fusion.v1` is the only one, and the parameters are a struct, not a file.
 - Severity. The contract has none for hazards yet.
-- Corroboration across sources is implemented and tested, but only one source exists.
+- Per-source lifecycle is implemented and tested with four Telegram channel identities. Copied posts without forward metadata may still masquerade as independent evidence; multiple source IDs do not prove independent reporting.
+- The 495-post measurement above applies to `vanek_nikolaev` only. Other channels require separately calibrated TTLs and monitored rollout.
