@@ -183,3 +183,78 @@ fn no_source_has_special_priority_in_the_retraction_policy() {
         );
     }
 }
+
+#[test]
+fn historical_evidence_is_distinct_from_the_live_source_set() {
+    let observations = [
+        report("kpszsu", 1, "2026-09-28T22:00:00Z", Stance::Threat),
+        report("war_monitor", 1, "2026-09-28T22:02:00Z", Stance::Threat),
+        report("kpszsu", 2, "2026-09-28T22:04:00Z", Stance::Clear),
+    ];
+    let assessment = assessed(&observations, "2026-09-28T22:05:00Z")
+        .assessments
+        .remove(0);
+    assert_eq!(assessment.evidence.len(), 2);
+    assert_eq!(assessment.active_sources.len(), 1);
+    assert_eq!(
+        assessment.active_sources[0].as_str(),
+        "telegram.channel:war_monitor"
+    );
+    assert_eq!(assessment.corroboration_count, 1);
+    let wire = serde_json::to_value(&assessment).unwrap();
+    assert_eq!(
+        wire["active_sources"],
+        serde_json::json!(["telegram.channel:war_monitor"])
+    );
+
+    // A previous producer may omit this additive field; decoding remains compatible.
+    let mut legacy = wire;
+    legacy.as_object_mut().unwrap().remove("active_sources");
+    let decoded: prism_signal_fusion::Assessment = serde_json::from_value(legacy).unwrap();
+    assert!(decoded.active_sources.is_empty());
+}
+
+#[test]
+fn retracted_and_expired_episodes_have_no_live_sources() {
+    let cleared = [
+        report("kpszsu", 1, "2026-09-28T22:00:00Z", Stance::Threat),
+        report("war_monitor", 1, "2026-09-28T22:02:00Z", Stance::Threat),
+        report("kpszsu", 2, "2026-09-28T22:04:00Z", Stance::Clear),
+        report("war_monitor", 2, "2026-09-28T22:07:00Z", Stance::Clear),
+    ];
+    let retracted = assessed(&cleared, "2026-09-28T22:08:00Z");
+    assert_eq!(retracted.assessments[0].status, Status::Retracted);
+    assert!(retracted.assessments[0].active_sources.is_empty());
+
+    let expired = assessed(
+        &[report("monitorwarr", 1, "2026-09-28T22:00:00Z", Stance::Threat)],
+        "2026-09-28T22:31:00Z",
+    );
+    assert_eq!(expired.assessments[0].status, Status::Expired);
+    assert!(expired.assessments[0].active_sources.is_empty());
+}
+
+#[test]
+fn channel_ids_are_sorted_without_priority_or_duplicate_weight() {
+    let observations = [
+        report("war_monitor", 1, "2026-09-28T22:00:00Z", Stance::Threat),
+        report("war_monitor", 2, "2026-09-28T22:01:00Z", Stance::Threat),
+        report("kpszsu", 1, "2026-09-28T22:02:00Z", Stance::Threat),
+        report("monitorwarr", 1, "2026-09-28T22:03:00Z", Stance::Threat),
+    ];
+    let result = assessed(&observations, "2026-09-28T22:04:00Z");
+    assert_eq!(result.assessments[0].evidence.len(), 4);
+    assert_eq!(result.assessments[0].corroboration_count, 3);
+    assert_eq!(
+        result.assessments[0]
+            .active_sources
+            .iter()
+            .map(SourceId::as_str)
+            .collect::<Vec<_>>(),
+        vec![
+            "telegram.channel:kpszsu",
+            "telegram.channel:monitorwarr",
+            "telegram.channel:war_monitor"
+        ]
+    );
+}
