@@ -17,8 +17,9 @@ One assessment is one *episode* of one *class* of hazard at one *place*: "drones
 | `status` | `active`, `expired`, or `retracted`, as of the evaluation time |
 | `revision` | grows with every renewal |
 | `proximity` | `target` when any report aims the hazard at the place, or the reader does not say; `nearby` only when every report says it is passing or near. A consumer may warn about `target` and, if the person asked, about `nearby` |
-| `likelihood`, `corroboration_count` | a band, never a percentage: `moderate` for one live source, `high` for two or more (not a calibrated probability) |
-| `evidence` | the reports behind it, oldest first, each with its public URL |
+| `likelihood`, `corroboration_count` | a legacy band and count of distinct channel identities still reporting the hazard; **not calibrated probability, independent confirmation, or measured local risk** |
+| `active_sources` | sorted unique channel IDs with unexpired, uncleared reports **as of evaluation time**; `[]` after a fully retracted or expired episode |
+| `evidence` | historical *threat reports* belonging to the episode, including sources that later cleared or expired; source clears remain visible in lifecycle events |
 
 It is a proposal. Whether to tell anyone is the consumer's decision.
 
@@ -54,6 +55,12 @@ A false all-clear is the worst thing this layer can produce. A retraction is del
 5. An all-clear that names no place, or no kind, is not evidence this layer can use. The threat it meant to end lapses on its window instead.
 
 Point 5 has a price. On 495 live posts the reader found 81 all-clear readings; 13 could be located to a kind and a place and 10 of those ended an assessment. The rest, mostly `минус по всем этим мопедам`, end nothing, and the alert lapses on its window (30 minutes for drones, 15 for bombs, 20 for missiles). A missed all-clear leaves a threat to lapse; a misapplied one hides a live one, and the second is the worse failure.
+
+**A retraction is not an official air-raid alert cancellation**, and neither expiry nor
+a missing report means that civilians are safe. The source count only says how
+many channel IDs currently carry a live report; channels can repeat the same
+original message. An app must not turn `high` into a probability or imply that
+an official warning was issued or lifted.
 
 **A consumer must not send "all clear" on a retraction alone.** If another active assessment of the same class covers the person's cell, they are still in danger and the retraction does not concern them.
 
