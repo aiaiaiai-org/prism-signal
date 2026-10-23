@@ -210,8 +210,14 @@ pub struct Assessment {
     pub revision: u32,
     /// A band, never a percentage: `moderate` for one live source, `high` for two or more.
     pub likelihood: ConfidenceBand,
-    /// Distinct sources with unexpired, uncleared reports at the evaluation time.
+    /// Distinct channel identities with unexpired, uncleared reports; not verified independence.
     pub corroboration_count: u32,
+    /// Channel IDs whose reports remain live at the evaluation time (sorted, unique).
+    ///
+    /// This is source status, NOT an official all-clear, calibrated risk or proof that reports
+    /// are independent. Defaulting on deserialize preserves older fusion.v1 assessments.
+    #[serde(default)]
+    pub active_sources: Vec<SourceId>,
     /// The evidence, oldest first.
     pub evidence: Vec<EvidenceRef>,
 }
@@ -334,12 +340,12 @@ impl Episode {
     }
 
     fn finish(self, status: Status, policy: &FusionPolicy, as_of: OffsetDateTime) -> Assessment {
-        let live_sources = self
+        let active_sources: Vec<SourceId> = self
             .active_sources
-            .values()
-            .filter(|until| **until > as_of)
-            .count();
-        let likelihood = if live_sources >= 2 {
+            .into_iter()
+            .filter_map(|(source, until)| (until > as_of).then_some(source))
+            .collect();
+        let likelihood = if active_sources.len() >= 2 {
             ConfidenceBand::High
         } else {
             ConfidenceBand::Moderate
@@ -361,7 +367,8 @@ impl Episode {
             status,
             revision: self.revision,
             likelihood,
-            corroboration_count: u32::try_from(live_sources).unwrap_or(u32::MAX),
+            corroboration_count: u32::try_from(active_sources.len()).unwrap_or(u32::MAX),
+            active_sources,
             evidence: self.evidence,
         }
     }
