@@ -227,7 +227,12 @@ fn retracted_and_expired_episodes_have_no_live_sources() {
     assert!(retracted.assessments[0].active_sources.is_empty());
 
     let expired = assessed(
-        &[report("monitorwarr", 1, "2026-09-28T22:00:00Z", Stance::Threat)],
+        &[report(
+            "monitorwarr",
+            1,
+            "2026-09-28T22:00:00Z",
+            Stance::Threat,
+        )],
         "2026-09-28T22:31:00Z",
     );
     assert_eq!(expired.assessments[0].status, Status::Expired);
