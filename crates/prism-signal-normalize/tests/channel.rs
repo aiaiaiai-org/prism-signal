@@ -142,7 +142,9 @@ fn an_unknown_town_is_reported_not_guessed() {
         .find(|r| r.kind == Some(HazardKind::Missile))
         .unwrap();
     assert!(missile.unresolved.contains(&"Виноградара".to_owned()));
-    assert!(!missile.actionable());
+    // The village is not guessed, and Kyiv's Виноградар district is not taken for it: the post
+    // does not name Kyiv. What the post does name is the region, and that is where it points.
+    assert_eq!(places(missile), [("Одеська область", PlaceRole::Target)]);
 }
 
 #[test]

@@ -19,6 +19,7 @@ workspace = true
 prism-signal-core = { path = "../prism-signal-core" }
 prism-signal-geo = { path = "../prism-signal-geo" }
 prism-signal-normalize = { path = "../prism-signal-normalize" }
+serde.workspace = true
+serde_json.workspace = true
 
 [dev-dependencies]
-serde_json.workspace = true

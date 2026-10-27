@@ -81,7 +81,7 @@ The validity windows are rounded up from that data: 90th percentile of the time 
 
 ## Not built
 
-- Regions: a report about an oblast reaches nobody. Regions need boundaries, not points.
+- Regions as assessments: a report about an oblast is skipped with the code `region`, since an assessment would alert the whole oblast as if the hazard were over each town. Tracks carry it apart, in `region_cells` ([`tracking.md`](tracking.md)).
 - A second policy. `fusion.v1` is the only one, and the parameters are a struct, not a file.
 - Severity. The contract has none for hazards yet.
 - Per-source lifecycle is implemented and tested with four Telegram channel identities. Copied posts without forward metadata may still masquerade as independent evidence; multiple source IDs do not prove independent reporting.

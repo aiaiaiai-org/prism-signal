@@ -214,6 +214,53 @@ pub fn corridor(
     Ok(Geometry::Polygon { rings: vec![ring] })
 }
 
+/// Cells of mixed resolutions, such as a compacted region, re-expressed at `resolution`: each
+/// cell coarser than it gives its children, sorted and deduplicated.
+pub fn uncompact(
+    ids: &[CellId],
+    resolution: CellResolution,
+    max_cells: usize,
+) -> Result<CellSet, CoverError> {
+    let target = h3_resolution(resolution);
+    let mut cells = BTreeSet::new();
+    for id in ids {
+        let cell = parse_cell(id)?;
+        if cell.resolution() > target {
+            return Err(CoverError::InvalidGeometry("cell finer than the target"));
+        }
+        for child in cell.children(target) {
+            cells.insert(child);
+            if cells.len() > max_cells {
+                return Err(CoverError::TooLarge { limit: max_cells });
+            }
+        }
+    }
+    Ok(CellSet {
+        resolution,
+        cells: cells.into_iter().map(cell_id).collect(),
+    })
+}
+
+/// The mean of a cell set's centers, and the radius in km of a disc of the same area: a point
+/// and a reach for a region given as cells. `None` for an empty set.
+pub fn centroid(set: &CellSet) -> Result<Option<(Position, f64)>, CoverError> {
+    if set.cells.is_empty() {
+        return Ok(None);
+    }
+    let (mut lat, mut lon, mut area) = (0.0, 0.0, 0.0);
+    for id in &set.cells {
+        let cell = parse_cell(id)?;
+        let center = LatLng::from(cell);
+        lat += center.lat();
+        lon += center.lng();
+        area += cell.area_km2();
+    }
+    let n = set.cells.len() as f64;
+    let center =
+        Position::new(lon / n, lat / n).map_err(|_| CoverError::InvalidGeometry("centroid"))?;
+    Ok(Some((center, (area / std::f64::consts::PI).sqrt())))
+}
+
 /// Great-circle distance in km.
 fn haversine_km(a: Position, b: Position) -> f64 {
     let (p, q) = (a.lat().to_radians(), b.lat().to_radians());
@@ -694,6 +741,44 @@ mod tests {
             corridor(lviv, 0.0, kyiv(), 10.0, 48).unwrap_err().code(),
             "invalid_geometry"
         );
+    }
+
+    #[test]
+    fn compacted_cells_come_back_at_one_resolution_with_a_center() {
+        let set = cover(&disc(kyiv(), 20.0, 48).unwrap(), res(6), 500).unwrap();
+        let parents: Vec<CellId> = set
+            .cells
+            .iter()
+            .map(|id| {
+                cell_id(
+                    parse_cell(id)
+                        .unwrap()
+                        .parent(h3_resolution(res(5)))
+                        .unwrap(),
+                )
+            })
+            .collect::<BTreeSet<_>>()
+            .into_iter()
+            .collect();
+        let back = uncompact(&parents, res(6), 5000).unwrap();
+        assert!(set.cells.iter().all(|c| back.cells.contains(c)));
+        assert_eq!(uncompact(&set.cells, res(6), 5000).unwrap(), set);
+        assert_eq!(
+            uncompact(&set.cells, res(6), 3).unwrap_err().code(),
+            "cover_too_large"
+        );
+        assert_eq!(
+            uncompact(&set.cells, res(5), 5000).unwrap_err().code(),
+            "invalid_geometry"
+        );
+        let (center, reach) = centroid(&set).unwrap().unwrap();
+        assert!(km(center, kyiv()) < 3.0, "{center:?}");
+        assert!((reach - 20.0).abs() < 4.0, "{reach}");
+        let empty = CellSet {
+            resolution: res(6),
+            cells: Vec::new(),
+        };
+        assert_eq!(centroid(&empty).unwrap(), None);
     }
 
     #[test]

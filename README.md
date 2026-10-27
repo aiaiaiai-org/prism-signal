@@ -76,4 +76,6 @@ Evidence collection from Telegram public channels, normalization of its text int
 
 The bundled gazetteer `crates/prism-signal-observe/data/gazetteer-ua.tsv` is derived from [GeoNames](https://www.geonames.org) data, licensed [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
 
+Region cells `crates/prism-signal-bridge/data/regions.v1.json` are derived from the [OCHA COD-AB Ukraine](https://data.humdata.org/dataset/cod-ab-ukr) boundaries, source: State Scientific Production Enterprise "Kartographia", licensed [CC BY-IGO 3.0](https://creativecommons.org/licenses/by/3.0/igo/legalcode).
+
 <!-- © 2026 aiaiaiai · aiaiaiai.org -->

@@ -252,3 +252,62 @@ fn equal_input_in_any_order_gives_equal_output() {
     assert_eq!(forward.tracks.len(), 4);
     assert_eq!(live(&forward).len(), 3);
 }
+
+fn cell_at(lon: f64, lat: f64) -> prism_signal_core::CellId {
+    cover(
+        &Geometry::point(Position::new(lon, lat).unwrap()),
+        FusionPolicy::v1().resolution,
+        1,
+    )
+    .unwrap()
+    .cells
+    .remove(0)
+}
+
+#[test]
+fn a_region_concerns_the_whole_oblast_its_exclaves_included_and_its_enclaves_left_out() {
+    let result = assessed(&post("kpszsu", 1, T0, "4 шахеда на Киевщину"), T5);
+    assert!(result.assessments.is_empty(), "a region is no assessment");
+    assert!(result.skipped.iter().any(|s| s.code == "region"));
+    let tracks = live(&result);
+    assert_eq!(tracks.len(), 4);
+    let track = tracks[0];
+    assert_eq!(
+        track.target.as_ref().unwrap().name.as_deref(),
+        Some("Київська область")
+    );
+    assert!(track.cells.cells.is_empty(), "nothing says where in it");
+    let region = &track.region_cells.cells;
+    // Slavutych, an exclave inside Chernihiv oblast, and Kotsiubynske, an enclave inside Kyiv
+    // city, are Kyiv oblast; the centre of Kyiv and Lviv are not.
+    assert!(region.contains(&cell_at(30.7472, 51.5229)), "Slavutych");
+    assert!(region.contains(&cell_at(30.3333, 50.4889)), "Kotsiubynske");
+    assert!(region.contains(&cell_at(30.7911, 50.511)), "Brovary");
+    assert!(!region.contains(&cell_at(30.5238, 50.4547)), "Kyiv city");
+    assert!(!region.contains(&cell_at(24.0297, 49.8397)), "Lviv");
+}
+
+#[test]
+fn a_track_heading_for_a_region_draws_no_corridor_to_its_middle() {
+    let result = assessed(
+        &post("kpszsu", 1, T0, "шахед над Черниговом курсом на Киевщину"),
+        T0,
+    );
+    let track = &live(&result)[0];
+    assert_eq!(track.position.name.as_deref(), Some("Чернігів"));
+    assert!(track.cells.cells.contains(&cell_at(31.2866, 51.5054)));
+    assert!(
+        !track.cells.cells.contains(&cell_at(30.7911, 50.511)),
+        "Brovary is not on a known way"
+    );
+    assert!(track.region_cells.cells.contains(&cell_at(30.7911, 50.511)));
+    // A later report of the same region continues these tracks; an all-clear for it ends them.
+    let observations = window(&[
+        post("kpszsu", 1, T0, "2 шахеда на Киевщину"),
+        post("kpszsu", 2, T5, "шахеды на Киевщину"),
+        post("kpszsu", 3, T10, "минус по шахедам на Киевщину"),
+    ]);
+    let result = assessed(&observations, T15);
+    assert_eq!(result.tracks.len(), 2);
+    assert_eq!(count(&result, TrackStatus::Cleared), 2);
+}

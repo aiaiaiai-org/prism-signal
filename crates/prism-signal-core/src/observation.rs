@@ -356,6 +356,16 @@ pub struct ObservationProvenance {
     pub place_order: Option<u16>,
 }
 
+/// Identifiers of first-level regions (oblasts, Crimea, Kyiv and Sevastopol cities) start with
+/// this: `ua-adm1:UA32` is Kyiv oblast. A region is not a city, and a report about one says
+/// nothing about where in it the hazard is.
+pub const REGION_PLACE_PREFIX: &str = "ua-adm1:";
+
+/// Whether a place identifier names a first-level region.
+pub fn is_region_place(place_id: &str) -> bool {
+    place_id.starts_with(REGION_PLACE_PREFIX)
+}
+
 /// How a text relates a place to a hazard, for readers that tell.
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]

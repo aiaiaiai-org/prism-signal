@@ -267,7 +267,12 @@ mod tests {
         let gazetteer = Gazetteer::embedded().unwrap();
         assert!(gazetteer.len() >= 80);
         assert!(gazetteer.attribution().contains("GeoNames"));
-        assert!(gazetteer.places().all(|p| p.id.starts_with("geonames:")));
+        assert!(
+            gazetteer
+                .places()
+                .all(|p| p.id.starts_with("geonames:") || p.id.starts_with("ua-adm1:"))
+        );
+        assert!(gazetteer.attribution().contains("COD-AB"));
         assert!(gazetteer.places().all(|p| (44.0..53.0).contains(&p.lat)));
         assert!(gazetteer.places().all(|p| (22.0..41.0).contains(&p.lon)));
     }
@@ -305,10 +310,21 @@ mod tests {
 
     #[test]
     fn regions_and_homonyms_are_not_mistaken_for_cities() {
+        // A region is itself, never its capital.
+        for (text, region) in [
+            ("Николаевщина", "Миколаївська область"),
+            ("Одесская область", "Одеська область"),
+            ("Киевщине", "Київська область"),
+            ("на Київщину", "Київська область"),
+            ("Київській області", "Київська область"),
+            ("Киевской обл.", "Київська область"),
+            ("Харківщиною", "Харківська область"),
+            ("над Буковиною", "Чернівецька область"),
+            ("Крым", "Крим"),
+        ] {
+            assert_eq!(name(text).as_deref(), Some(region), "{text}");
+        }
         for text in [
-            "Николаевщина",
-            "Одесская область",
-            "Киевщине",
             "Каменск-Уральский",
             "Николаевка",
             "сумма",

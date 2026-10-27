@@ -909,6 +909,7 @@ dependencies = [
  "prism-signal-core",
  "prism-signal-geo",
  "prism-signal-normalize",
+ "serde",
  "serde_json",
 ]
 
@@ -956,6 +957,7 @@ dependencies = [
  "h3o",
  "prism-signal-core",
  "serde",
+ "serde_json",
  "thiserror",
 ]
 

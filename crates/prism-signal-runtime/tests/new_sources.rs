@@ -114,7 +114,12 @@ fn source_shorthand_obeys_existing_location_and_clear_boundaries() {
         post("war_monitor", "synthetic-minus", "Мінус"),
         post("monitorwarr", "synthetic-followup", "Кружляє поблизу Києва"),
     ]);
-    assert_eq!(result["result"]["observations"], json!([]));
+    // The region is the only observation, as its own cells; fusion keeps regions out of
+    // assessments and gives them to tracks.
+    let observations = result["result"]["observations"].as_array().unwrap();
+    assert_eq!(observations.len(), 1);
+    assert_eq!(observations[0]["provenance"]["place_id"], "ua-adm1:UA32");
+    assert_eq!(observations[0]["geometry"]["type"], "cells");
     let skipped = result["result"]["skipped"].as_array().unwrap();
     assert_eq!(skipped.len(), 2);
     assert!(skipped.iter().all(|item| item["code"] == "unlocated_clear"));

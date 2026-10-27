@@ -1,6 +1,6 @@
 {
  "version": "gazetteer.v1",
- "attribution": "Coordinates and identifiers from GeoNames (https://www.geonames.org), licensed CC BY 4.0. Spellings and reach radii are curated by aiaiaiai.",
+ "attribution": "Coordinates and identifiers from GeoNames (https://www.geonames.org), licensed CC BY 4.0. Spellings and reach radii are curated by aiaiaiai. Region centres and reaches derive from OCHA COD-AB Ukraine boundaries (https://data.humdata.org/dataset/cod-ab-ukr), source: State Scientific Production Enterprise Kartographia, licensed CC BY-IGO 3.0.",
  "places": [
   {
    "id": "geonames:703448",
@@ -2027,6 +2027,423 @@
      "академмістечк",
      "академгородк"
     ],
+    "capitalized": true
+   }
+  },
+  {
+   "id": "ua-adm1:UA01",
+   "name": "Крим",
+   "lat": 45.3047,
+   "lon": 34.3477,
+   "reach_km": 91,
+   "match": {
+    "stems": [
+     "крим"
+    ],
+    "max_suffix": 5,
+    "capitalized": true
+   }
+  },
+  {
+   "id": "ua-adm1:UA05",
+   "name": "Вінницька область",
+   "lat": 48.9188,
+   "lon": 28.684,
+   "reach_km": 92,
+   "match": {
+    "stems": [
+     "вінницьк обл",
+     "винницк обл",
+     "вінниччин",
+     "винничин"
+    ],
+    "max_suffix": 5,
+    "capitalized": true
+   }
+  },
+  {
+   "id": "ua-adm1:UA07",
+   "name": "Волинська область",
+   "lat": 51.1912,
+   "lon": 24.8648,
+   "reach_km": 80,
+   "match": {
+    "stems": [
+     "волинськ обл",
+     "волынск обл",
+     "волин"
+    ],
+    "max_suffix": 5,
+    "capitalized": true
+   }
+  },
+  {
+   "id": "ua-adm1:UA12",
+   "name": "Дніпропетровська область",
+   "lat": 48.3025,
+   "lon": 34.8509,
+   "reach_km": 101,
+   "match": {
+    "stems": [
+     "дніпропетровськ обл",
+     "днепропетровск обл",
+     "дніпропетровщин",
+     "днепропетровщин",
+     "січеславщин"
+    ],
+    "max_suffix": 5,
+    "capitalized": true
+   }
+  },
+  {
+   "id": "ua-adm1:UA14",
+   "name": "Донецька область",
+   "lat": 48.0424,
+   "lon": 37.6828,
+   "reach_km": 92,
+   "match": {
+    "stems": [
+     "донецьк обл",
+     "донецк обл",
+     "донеччин",
+     "донетчин"
+    ],
+    "max_suffix": 5,
+    "capitalized": true
+   }
+  },
+  {
+   "id": "ua-adm1:UA18",
+   "name": "Житомирська область",
+   "lat": 50.6366,
+   "lon": 28.4746,
+   "reach_km": 98,
+   "match": {
+    "stems": [
+     "житомирськ обл",
+     "житомирск обл",
+     "житомирщин"
+    ],
+    "max_suffix": 5,
+    "capitalized": true
+   }
+  },
+  {
+   "id": "ua-adm1:UA21",
+   "name": "Закарпатська область",
+   "lat": 48.4004,
+   "lon": 23.2807,
+   "reach_km": 63,
+   "match": {
+    "stems": [
+     "закарпатськ обл",
+     "закарпатск обл",
+     "закарпатт",
+     "закарпать"
+    ],
+    "max_suffix": 5,
+    "capitalized": true
+   }
+  },
+  {
+   "id": "ua-adm1:UA23",
+   "name": "Запорізька область",
+   "lat": 47.2662,
+   "lon": 35.7077,
+   "reach_km": 93,
+   "match": {
+    "stems": [
+     "запорізьк обл",
+     "запорожск обл",
+     "запоріжчин",
+     "запорожчин"
+    ],
+    "max_suffix": 5,
+    "capitalized": true
+   }
+  },
+  {
+   "id": "ua-adm1:UA26",
+   "name": "Івано-Франківська область",
+   "lat": 48.7085,
+   "lon": 24.6165,
+   "reach_km": 66,
+   "match": {
+    "stems": [
+     "івано-франківськ обл",
+     "ивано-франковск обл",
+     "франківщин",
+     "прикарпатт",
+     "прикарпать"
+    ],
+    "max_suffix": 5,
+    "capitalized": true
+   }
+  },
+  {
+   "id": "ua-adm1:UA32",
+   "name": "Київська область",
+   "lat": 50.301,
+   "lon": 30.4653,
+   "reach_km": 95,
+   "match": {
+    "stems": [
+     "київськ обл",
+     "киевск обл",
+     "київщин",
+     "киевщин"
+    ],
+    "max_suffix": 5,
+    "capitalized": true
+   }
+  },
+  {
+   "id": "ua-adm1:UA35",
+   "name": "Кіровоградська область",
+   "lat": 48.4718,
+   "lon": 32.0816,
+   "reach_km": 88,
+   "match": {
+    "stems": [
+     "кіровоградськ обл",
+     "кировоградск обл",
+     "кіровоградщин",
+     "кировоградщин",
+     "кропивниччин"
+    ],
+    "max_suffix": 5,
+    "capitalized": true
+   }
+  },
+  {
+   "id": "ua-adm1:UA44",
+   "name": "Луганська область",
+   "lat": 48.9815,
+   "lon": 39.0222,
+   "reach_km": 92,
+   "match": {
+    "stems": [
+     "луганськ обл",
+     "луганск обл",
+     "луганщин"
+    ],
+    "max_suffix": 5,
+    "capitalized": true
+   }
+  },
+  {
+   "id": "ua-adm1:UA46",
+   "name": "Львівська область",
+   "lat": 49.7135,
+   "lon": 23.9143,
+   "reach_km": 83,
+   "match": {
+    "stems": [
+     "львівськ обл",
+     "львовск обл",
+     "львівщин",
+     "львовщин"
+    ],
+    "max_suffix": 5,
+    "capitalized": true
+   }
+  },
+  {
+   "id": "ua-adm1:UA48",
+   "name": "Миколаївська область",
+   "lat": 47.4221,
+   "lon": 31.7839,
+   "reach_km": 88,
+   "match": {
+    "stems": [
+     "миколаївськ обл",
+     "николаевск обл",
+     "миколаївщин",
+     "николаевщин"
+    ],
+    "max_suffix": 5,
+    "capitalized": true
+   }
+  },
+  {
+   "id": "ua-adm1:UA51",
+   "name": "Одеська область",
+   "lat": 46.7316,
+   "lon": 29.8669,
+   "reach_km": 103,
+   "match": {
+    "stems": [
+     "одеськ обл",
+     "одесск обл",
+     "одещин",
+     "одесчин"
+    ],
+    "max_suffix": 5,
+    "capitalized": true
+   }
+  },
+  {
+   "id": "ua-adm1:UA53",
+   "name": "Полтавська область",
+   "lat": 49.736,
+   "lon": 33.7798,
+   "reach_km": 95,
+   "match": {
+    "stems": [
+     "полтавськ обл",
+     "полтавск обл",
+     "полтавщин"
+    ],
+    "max_suffix": 5,
+    "capitalized": true
+   }
+  },
+  {
+   "id": "ua-adm1:UA56",
+   "name": "Рівненська область",
+   "lat": 51.0431,
+   "lon": 26.3855,
+   "reach_km": 80,
+   "match": {
+    "stems": [
+     "рівненськ обл",
+     "ровенск обл",
+     "рівненщин",
+     "ровенщин"
+    ],
+    "max_suffix": 5,
+    "capitalized": true
+   }
+  },
+  {
+   "id": "ua-adm1:UA59",
+   "name": "Сумська область",
+   "lat": 51.1052,
+   "lon": 34.131,
+   "reach_km": 87,
+   "match": {
+    "stems": [
+     "сумськ обл",
+     "сумск обл",
+     "сумщин"
+    ],
+    "max_suffix": 5,
+    "capitalized": true
+   }
+  },
+  {
+   "id": "ua-adm1:UA61",
+   "name": "Тернопільська область",
+   "lat": 49.4019,
+   "lon": 25.6454,
+   "reach_km": 66,
+   "match": {
+    "stems": [
+     "тернопільськ обл",
+     "тернопольск обл",
+     "тернопільщин",
+     "тернопольщин"
+    ],
+    "max_suffix": 5,
+    "capitalized": true
+   }
+  },
+  {
+   "id": "ua-adm1:UA63",
+   "name": "Харківська область",
+   "lat": 49.6101,
+   "lon": 36.5051,
+   "reach_km": 100,
+   "match": {
+    "stems": [
+     "харківськ обл",
+     "харьковск обл",
+     "харківщин",
+     "харьковщин"
+    ],
+    "max_suffix": 5,
+    "capitalized": true
+   }
+  },
+  {
+   "id": "ua-adm1:UA65",
+   "name": "Херсонська область",
+   "lat": 46.6746,
+   "lon": 33.5294,
+   "reach_km": 92,
+   "match": {
+    "stems": [
+     "херсонськ обл",
+     "херсонск обл",
+     "херсонщин"
+    ],
+    "max_suffix": 5,
+    "capitalized": true
+   }
+  },
+  {
+   "id": "ua-adm1:UA68",
+   "name": "Хмельницька область",
+   "lat": 49.5035,
+   "lon": 26.9219,
+   "reach_km": 81,
+   "match": {
+    "stems": [
+     "хмельницьк обл",
+     "хмельницк обл",
+     "хмельниччин",
+     "хмельнитчин"
+    ],
+    "max_suffix": 5,
+    "capitalized": true
+   }
+  },
+  {
+   "id": "ua-adm1:UA71",
+   "name": "Черкаська область",
+   "lat": 49.2591,
+   "lon": 31.3589,
+   "reach_km": 82,
+   "match": {
+    "stems": [
+     "черкаськ обл",
+     "черкасск обл",
+     "черкащин"
+    ],
+    "max_suffix": 5,
+    "capitalized": true
+   }
+  },
+  {
+   "id": "ua-adm1:UA73",
+   "name": "Чернівецька область",
+   "lat": 48.2707,
+   "lon": 25.9778,
+   "reach_km": 51,
+   "match": {
+    "stems": [
+     "чернівецьк обл",
+     "черновицк обл",
+     "буковин"
+    ],
+    "max_suffix": 5,
+    "capitalized": true
+   }
+  },
+  {
+   "id": "ua-adm1:UA74",
+   "name": "Чернігівська область",
+   "lat": 51.3557,
+   "lon": 32.005,
+   "reach_km": 101,
+   "match": {
+    "stems": [
+     "чернігівськ обл",
+     "черниговск обл",
+     "чернігівщин",
+     "черниговщин"
+    ],
+    "max_suffix": 5,
     "capitalized": true
    }
   }

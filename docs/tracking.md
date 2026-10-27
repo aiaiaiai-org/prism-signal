@@ -14,7 +14,11 @@ Built so far, and what it does not do yet:
 - a clear that names no place never reaches fusion (the bridge drops it), so the placeless-clear
   rule is not applied yet;
 - Kyiv's districts are named when the post names Kyiv; a local channel that never writes `Київ`
-  is not yet a context of its own, and regions (oblasts, exclaves) wait on the rest of step 4.
+  is not yet a context of its own;
+- regions are built: `на Київщину` gives tracks whose `region_cells` are the oblast, Slavutych
+  included and Kyiv city left out, and whose `cells` stay empty until a place inside is named.
+  Assessments skip regions (`skipped` code `region`) until the hub and Porter know a region
+  level, so no alert changes.
 
 Decided: a placeless clear ends only that source's own tracks from the last hour; a local news
 channel alone can raise 🟡 but not ring 🔴; official alerts come from
@@ -228,7 +232,7 @@ Each step is its own pull request and leaves everything working:
 2. **Geo**: corridor cover (a widened segment between two discs).
 3. **Fusion** (built): tracks, with policy tests replaying the archive's real posts, including the cases
    above.
-4. **Places**: oblast and city regions as multipolygons (holes, exclaves), and city districts
+4. **Places** (built): oblast and city regions as multipolygons (holes, exclaves), and city districts
    scoped to their city.
 5. **Official alerts**: a hub source reading alerts.in.ua (community level, with its token as a
    hub secret) and community boundaries, as a separate layer the status leads with. It needs no

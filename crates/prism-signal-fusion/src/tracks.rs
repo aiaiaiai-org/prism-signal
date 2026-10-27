@@ -23,9 +23,9 @@ use std::collections::BTreeMap;
 
 use prism_signal_core::{
     ExternalId, Geometry, HazardKind, PlaceRole, Position, SignalObservation, SourceId, Stance,
-    Timestamp,
+    Timestamp, is_region_place,
 };
-use prism_signal_geo::{CellSet, corridor, cover, disc, expand};
+use prism_signal_geo::{CellSet, centroid, corridor, cover, disc, expand};
 use serde::{Deserialize, Serialize};
 use time::{Duration, OffsetDateTime};
 
@@ -170,8 +170,12 @@ pub struct Track {
     /// Every place it was reported at, oldest first.
     pub path: Vec<PathPoint>,
     /// Cells a person must be standing in to be concerned: its position circle, grown with the
-    /// time since the last report, and its corridor to the target.
+    /// time since the last report, and its corridor to the target. Empty while the only place
+    /// known is a region.
     pub cells: CellSet,
+    /// The region a report put it in or aimed it at (`на Київщину`): everyone there should know,
+    /// less urgently than someone in `cells`, since nothing says where in the region it is.
+    pub region_cells: CellSet,
     /// Where it stands.
     pub status: TrackStatus,
     /// The first report.
@@ -222,6 +226,8 @@ struct Spot {
     place: PlaceRef,
     center: Position,
     radius_km: f64,
+    /// The region's cells, when the place is a region.
+    region: Option<CellSet>,
 }
 
 impl Spot {
@@ -245,12 +251,26 @@ impl Spot {
                 let radius = corners.iter().map(|c| km(center, *c)).sum::<f64>() / n;
                 (center, radius.max(1.0))
             }
+            Geometry::Cells { resolution, cells } if is_region_place(&place.id) => {
+                let set = CellSet {
+                    resolution: *resolution,
+                    cells: cells.clone(),
+                };
+                let (center, radius) = centroid(&set).ok()??;
+                return Some(Self {
+                    place,
+                    center,
+                    radius_km: radius,
+                    region: Some(set),
+                });
+            }
             Geometry::Cells { .. } => return None,
         };
         Some(Self {
             place,
             center,
             radius_km,
+            region: None,
         })
     }
 
@@ -684,11 +704,31 @@ fn clear(tracks: &mut [Live], events: &mut Vec<TrackEvent>, report: &Report) {
     }
 }
 
+/// The region cells a track concerns: its target's region, or else its position's, widened by
+/// the edge ring. An ended track concerns nobody.
+fn region_cells(live: &Live, policy: &FusionPolicy) -> CellSet {
+    let region = live
+        .target
+        .as_ref()
+        .and_then(|t| t.region.as_ref())
+        .or(live.position.region.as_ref());
+    match region {
+        Some(set) if live.status.is_live() => {
+            expand(set, policy.edge_rings, policy.tracks.max_cells).unwrap_or_else(|_| set.clone())
+        }
+        _ => CellSet {
+            resolution: policy.resolution,
+            cells: Vec::new(),
+        },
+    }
+}
+
 /// The cells a track concerns as of `now`: its position circle grown with the time since the
-/// last report, and its corridor to the target. An ended track concerns nobody.
+/// last report, and its corridor to the target. A region is not a position or a target to
+/// draw toward (see [`region_cells`]), and an ended track concerns nobody.
 fn cells(live: &Live, policy: &FusionPolicy, now: OffsetDateTime) -> CellSet {
     let rules = &policy.tracks;
-    if !live.status.is_live() {
+    if !live.status.is_live() || live.position.region.is_some() {
         return CellSet {
             resolution: policy.resolution,
             cells: Vec::new(),
@@ -701,7 +741,7 @@ fn cells(live: &Live, policy: &FusionPolicy, now: OffsetDateTime) -> CellSet {
     let band = rules.band_km(live.class);
     let here = (live.position.radius_km + grown).max(band);
     let geometry = match &live.target {
-        Some(target) if !target.same(&live.position) => corridor(
+        Some(target) if !target.same(&live.position) && target.region.is_none() => corridor(
             live.position.center,
             here,
             target.center,
@@ -732,6 +772,7 @@ fn cells(live: &Live, policy: &FusionPolicy, now: OffsetDateTime) -> CellSet {
 
 fn finish(live: Live, policy: &FusionPolicy, now: OffsetDateTime) -> Track {
     let cells = cells(&live, policy, now);
+    let region_cells = region_cells(&live, policy);
     Track {
         track_id: live.id,
         policy_version: policy.version.to_owned(),
@@ -747,6 +788,7 @@ fn finish(live: Live, policy: &FusionPolicy, now: OffsetDateTime) -> Track {
         target: live.target.map(|t| t.place),
         path: live.path,
         cells,
+        region_cells,
         status: live.status,
         first_at: Timestamp::from_datetime(live.first_at),
         last_seen_at: Timestamp::from_datetime(live.last_seen),

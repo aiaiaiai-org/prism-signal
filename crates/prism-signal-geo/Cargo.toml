@@ -22,3 +22,6 @@ h3o = { version = "0.8", features = ["geo"] }
 prism-signal-core = { path = "../prism-signal-core" }
 serde.workspace = true
 thiserror.workspace = true
+
+[dev-dependencies]
+serde_json.workspace = true
