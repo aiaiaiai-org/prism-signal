@@ -1108,6 +1108,258 @@
     "вільнянськ"
    ],
    "max_suffix": 2
+  },
+  {
+   "geonames_id": 8519916,
+   "name": "Оболонь",
+   "stems": [
+    "оболон"
+   ],
+   "capitalized": true,
+   "reach_km": 4,
+   "within": 703448
+  },
+  {
+   "geonames_id": 688758,
+   "name": "Троєщина",
+   "stems": [
+    "троєщин",
+    "троещин"
+   ],
+   "capitalized": true,
+   "reach_km": 4,
+   "within": 703448
+  },
+  {
+   "geonames_id": 13580094,
+   "name": "Позняки",
+   "stems": [
+    "позняк"
+   ],
+   "forms": [
+    "позняками"
+   ],
+   "capitalized": true,
+   "reach_km": 4,
+   "within": 703448
+  },
+  {
+   "geonames_id": 13580116,
+   "name": "Осокорки",
+   "stems": [
+    "осокорк"
+   ],
+   "forms": [
+    "осокорками"
+   ],
+   "capitalized": true,
+   "reach_km": 4,
+   "within": 703448
+  },
+  {
+   "geonames_id": 13580317,
+   "name": "Харківський масив",
+   "stems": [
+    "харківськ масив",
+    "харьковск массив"
+   ],
+   "max_suffix": 3,
+   "capitalized": true,
+   "reach_km": 4,
+   "within": 703448
+  },
+  {
+   "geonames_id": 13580095,
+   "name": "Дарниця",
+   "stems": [
+    "дарниц"
+   ],
+   "capitalized": true,
+   "reach_km": 4,
+   "within": 703448
+  },
+  {
+   "geonames_id": 13580119,
+   "name": "Лісовий масив",
+   "stems": [
+    "лісов масив",
+    "лесн массив"
+   ],
+   "max_suffix": 3,
+   "capitalized": true,
+   "reach_km": 4,
+   "within": 703448
+  },
+  {
+   "geonames_id": 13580324,
+   "name": "Русанівка",
+   "stems": [
+    "русанівк",
+    "русановк"
+   ],
+   "capitalized": true,
+   "reach_km": 4,
+   "within": 703448
+  },
+  {
+   "geonames_id": 13580096,
+   "name": "Березняки",
+   "stems": [
+    "березняк"
+   ],
+   "forms": [
+    "березняками"
+   ],
+   "capitalized": true,
+   "reach_km": 4,
+   "within": 703448
+  },
+  {
+   "geonames_id": 13535747,
+   "name": "Святошин",
+   "stems": [
+    "святошин"
+   ],
+   "capitalized": true,
+   "reach_km": 4,
+   "within": 703448
+  },
+  {
+   "geonames_id": 13580103,
+   "name": "Виноградар",
+   "stems": [
+    "виноградар"
+   ],
+   "capitalized": true,
+   "reach_km": 4,
+   "within": 703448
+  },
+  {
+   "geonames_id": 13580112,
+   "name": "Теремки",
+   "stems": [
+    "теремк"
+   ],
+   "forms": [
+    "теремками"
+   ],
+   "capitalized": true,
+   "reach_km": 4,
+   "within": 703448
+  },
+  {
+   "geonames_id": 13535744,
+   "name": "Голосіїв",
+   "stems": [
+    "голосіїв",
+    "голосієв",
+    "голосеев"
+   ],
+   "capitalized": true,
+   "reach_km": 4,
+   "within": 703448
+  },
+  {
+   "geonames_id": 13535745,
+   "name": "Печерськ",
+   "stems": [
+    "печерськ",
+    "печерск"
+   ],
+   "capitalized": true,
+   "reach_km": 4,
+   "within": 703448
+  },
+  {
+   "geonames_id": 696877,
+   "name": "Поділ",
+   "forms": [
+    "подол",
+    "подоле",
+    "подолом",
+    "подолу",
+    "подолі",
+    "поділ"
+   ],
+   "capitalized": true,
+   "reach_km": 4,
+   "within": 703448
+  },
+  {
+   "geonames_id": 13580041,
+   "name": "Нивки",
+   "stems": [
+    "нивк"
+   ],
+   "forms": [
+    "нивками"
+   ],
+   "capitalized": true,
+   "reach_km": 4,
+   "within": 703448
+  },
+  {
+   "geonames_id": 13580126,
+   "name": "Сирець",
+   "forms": [
+    "сирець",
+    "сирцем",
+    "сирцю",
+    "сирця",
+    "сирці",
+    "сырец",
+    "сырца",
+    "сырце",
+    "сырцом"
+   ],
+   "capitalized": true,
+   "reach_km": 4,
+   "within": 703448
+  },
+  {
+   "geonames_id": 13580113,
+   "name": "Відрадний",
+   "stems": [
+    "відрадн",
+    "отрадн"
+   ],
+   "max_suffix": 3,
+   "capitalized": true,
+   "reach_km": 4,
+   "within": 703448
+  },
+  {
+   "geonames_id": 13546520,
+   "name": "Солом'янка",
+   "stems": [
+    "солом'янк",
+    "соломенк"
+   ],
+   "capitalized": true,
+   "reach_km": 4,
+   "within": 703448
+  },
+  {
+   "geonames_id": 13580127,
+   "name": "Куренівка",
+   "stems": [
+    "куренівк",
+    "куреневк"
+   ],
+   "capitalized": true,
+   "reach_km": 4,
+   "within": 703448
+  },
+  {
+   "geonames_id": 13580325,
+   "name": "Академмістечко",
+   "stems": [
+    "академмістечк",
+    "академгородк"
+   ],
+   "capitalized": true,
+   "reach_km": 4,
+   "within": 703448
   }
  ]
 }

@@ -246,7 +246,8 @@ impl Normalizer {
         }
         let mut tokens = tokenize(text);
         split_at_commas_around_all_clears(&self.lexicon, &mut tokens, evidence.source_id.as_str());
-        let mut clauses = self.clauses(&tokens, evidence.source_id.as_str());
+        let cities = self.gazetteer.cities_named(&tokens);
+        let mut clauses = self.clauses(&tokens, evidence.source_id.as_str(), &cities);
         carry_kinds_forward(&mut clauses);
         clauses
             .into_iter()
@@ -254,7 +255,7 @@ impl Normalizer {
             .collect()
     }
 
-    fn clauses(&self, tokens: &[Token], source: &str) -> Vec<Clause> {
+    fn clauses(&self, tokens: &[Token], source: &str, cities: &BTreeSet<String>) -> Vec<Clause> {
         // What each word turned out to be, so a later word can inherit from an earlier one.
         let mut role_at: Vec<Option<PlaceRole>> = vec![None; tokens.len()];
         let mut done = Vec::new();
@@ -284,7 +285,7 @@ impl Normalizer {
                 clause.cleared_phrase = true;
             }
 
-            if let Some((place, len)) = self.gazetteer.match_at(tokens, i) {
+            if let Some((place, len)) = self.gazetteer.match_at(tokens, i, cities) {
                 let role = context.unwrap_or(PlaceRole::Mention);
                 clause.mention(place, role);
                 role_at[i..i + len].fill(Some(role));
