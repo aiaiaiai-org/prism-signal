@@ -346,6 +346,14 @@ pub struct ObservationProvenance {
     /// reader does not distinguish, and a consumer must treat the place as the hazard's target.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub place_role: Option<PlaceRole>,
+    /// Which statement of the evidence this came from, from 0, for readers that tell. Places of
+    /// one statement are about the same objects; `2 шахеди на Одесу, 3 на Київ` is two.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub statement: Option<u16>,
+    /// The place's position among the located places of its statement, from 0, in the order the
+    /// text names them. `через Бровари на Київ` names Brovary first.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub place_order: Option<u16>,
 }
 
 /// How a text relates a place to a hazard, for readers that tell.
