@@ -490,3 +490,19 @@ fn an_all_clear_applies_to_a_list_of_places_within_its_own_comma_segment() {
     assert_eq!(readings.len(), 1);
     assert_eq!(readings[0].phase, Phase::Cleared);
 }
+
+#[test]
+fn a_plural_town_is_found_in_the_instrumental_case() {
+    for (text, name) in [
+        ("мопед над Броварами", "Бровари"),
+        ("шахеды над Черкассами", "Черкаси"),
+        ("шахеди над Черкасами", "Черкаси"),
+        ("дрон над Чернівцями", "Чернівці"),
+        ("шахед над Прилуками", "Прилуки"),
+        ("шахеди над Ромнами", "Ромни"),
+    ] {
+        let readings = read(text);
+        assert_eq!(readings.len(), 1, "{text}");
+        assert_eq!(places(&readings[0]), [(name, PlaceRole::Target)], "{text}");
+    }
+}
