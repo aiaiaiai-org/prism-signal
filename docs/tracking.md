@@ -29,6 +29,7 @@ an explicit end.
 | `target` | the last place a report aimed it at (`на`, `в сторону`, `над`), if any |
 | `cells` | its **corridor**: the cells from its last known place to its target, see below |
 | `status` | `active`, `neutralized`, `cleared`, or `quiet` |
+| `motion` | `heading` (has a target), `loitering` (`по колу`, `кружляє`), or `unknown` |
 | `last_seen_at` | the newest report that concerned it |
 | `evidence` | every report that concerned it, with sources |
 
@@ -94,6 +95,92 @@ A target that is a region (`на Київщину`, `з боку Білорус�
 gazetteer does not have yet. Until it does, such a target is recorded on the track and the
 corridor ends at the last named place.
 
+## Where a track is: a circle that grows
+
+A report says where something was, not where it is. A track's position is therefore a circle: the
+last named place, widened by how far the kind can fly since that report, up to a cap.
+
+| Since the report | Shahed, 200 km/h | Jet drone, 700 km/h |
+| --- | --- | --- |
+| 0 min | the place's own reach (a district 3 km, a city 12 km) | same |
+| 5 min | +17 km | +58 km |
+| 15 min and later | 40 km, the cap | 40 km, the cap |
+
+So `зараз на Оболоні` is first a warning for Obolon and its neighbours, and only becomes "the
+whole of Kyiv" if nothing more is heard. A fresh report shrinks the circle again. With a target the
+circle grows along the corridor; without one it grows evenly.
+
+## Cases
+
+### A drone circling over a city
+
+`Літає по колу, зараз на Оболоні` (a local Kyiv channel):
+
+- **No kind word.** The kind is taken from that source's own active track in the same city, if it
+  has exactly one class there in the last 30 minutes. Otherwise the track is `air.unknown`: an
+  unknown object is still a threat and is shown as one, never dropped.
+- **No target, `по колу`.** The track is `loitering`: it has a position and no corridor. It does
+  not move toward anything, so it is never marked as having passed a place.
+- **A district, not a city.** `Оболонь` must resolve to a district of Kyiv. Districts are kept out
+  of the gazetteer today (a Kyiv district would outweigh a village of the same name). They come
+  back scoped to their city: a district name resolves only when the post or its source is about
+  that city.
+- **The result.** Someone in Obolon sees 🔴; someone in Sviatoshyn sees 🟡 "near" until the circle
+  grows to reach them, rather than the whole city being red for one drone.
+- **Channel noise.** Footers such as `Надіслати новину …` and `ПІДПИСАТИСЯ` are stripped by the
+  source adapter. A local news channel reposts readers' messages, so it is a source of its own
+  tier: alone, it can raise 🟡 but not ring 🔴; with a monitoring channel agreeing, it can.
+
+### A region with an exclave
+
+`на Київщину`: Kyiv oblast is not one shape. Slavutych belongs to it and sits inside Chernihiv
+oblast; Kyiv city is a separate unit inside it.
+
+- Regions are multipolygons with holes and exclaves, never a centre and a radius. The cover of a
+  multipolygon already uses the safe rule (one ring of neighbours), so Slavutych is covered.
+- A region is not a corridor: four drones "на Київщину" do not fly over all of it. A person in
+  the oblast but not on any known corridor gets 🟠 **"on your oblast"**, quieter than 🔴, which is
+  kept for people on a corridor or in a position circle.
+- Kyiv city and Kyiv oblast are separate regions. `на Київ` does not mean the oblast, and
+  `на Київщину` does not mean the city; an exclave is in its own oblast, not its neighbour's.
+- Physical closeness beats administrative membership: a track over Chernihiv oblast heading for
+  Slavutych concerns Slavutych through its corridor, whatever oblast the report named.
+
+### Official alerts drawn per community
+
+On the official map Kyiv city is under alert and Kotsiubynske, an enclave surrounded by it, is
+not; Horenka across the boundary is not either. Official alerts are per community (hromada) and
+follow administrative lines, not where anything flies.
+
+They are a **second layer**, never mixed with tracks:
+
+| | Source reports (tracks) | Official alerts |
+| --- | --- | --- |
+| What | where sources say something is | whether authorities declared an alert |
+| Shape | position circles and corridors | community boundaries, with holes and enclaves |
+| Can say "відбій" | never | yes, as the authority's words |
+| A person is in it by | their cell in the cover | point-in-polygon of their position at community level |
+
+The status leads with the official layer when it is available ("🔴 Офіційна тривога у вашій
+громаді"), and source tracks add what and where. An official all-clear may be shown as
+an official all-clear, with active tracks still listed under it: the official layer ends the
+official alert, not the tracks. When the official layer is unavailable, the status says so
+instead of assuming either way. A person's community is found at the precision of the stored
+position: a cell on a boundary is in every community it touches, and the strictest status wins.
+
+### Other cases the rules must cover
+
+| Report | Reading |
+| --- | --- |
+| `мопед змінив курс на Житомир` | the track gets a new target and a new corridor. People on the old corridor stay 🔴 while the position circle still reaches them |
+| `ще 2 на підльоті` after `збито 1` | two new tracks, never a reopening of the neutralized one |
+| `група 10+ шахедів` | ten tracks, `count_at_least`; never brought to zero by subtraction |
+| `вибухи у Києві` | evidence that something arrived; ends nothing |
+| `пуск балістики з Криму`, `зліт МіГ-31К` | a national-level track with no place: shown to everyone who asked for missiles as 🟠, with no corridor until a place is named |
+| the same post copied by three channels | one report, by original post id or identical text within minutes; copies are not corroboration |
+| `збито` from one channel, a threat still reported by another | the neutralization ends the matched track; the other channel's report starts or continues another one |
+| a report on the far side of a border (Belarus, Russia) | a track may start there; its corridor is cut at the border, since nobody there is a subscriber |
+
 ## What the hub gets
 
 Assessments stay as they are, so nothing that uses them changes. The `assess` answer gains an
@@ -123,7 +210,10 @@ Each step is its own pull request and leaves everything working:
 2. **Geo**: corridor cover (a widened segment between two discs).
 3. **Fusion**: tracks, with policy tests replaying the archive's real posts, including the cases
    above.
-4. **Regions**: oblast boundaries, so `на Київщину` reaches people in the oblast.
-5. **Hub and Porter**: active tracks per person until ended, one board and one status per person
+4. **Places**: oblast and city regions as multipolygons (holes, exclaves), and city districts
+   scoped to their city.
+5. **Official alerts**: a hub source for community-level official alerts and their boundaries,
+   as a separate layer the status leads with.
+6. **Hub and Porter**: active tracks per person until ended, one board and one status per person
    through the bot's edit and delete contract, and the `observe` reader's interception reading
    aligned with step 1.
