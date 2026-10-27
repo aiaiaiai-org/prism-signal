@@ -199,13 +199,65 @@ fn only_explicit_all_clear_words_end_a_threat() {
         "повторных пусков КАБ больше не было",
         "ракета больше не фиксируется",
         "все ракеты летят на Черкассы, есть уже первые сбития",
-        "часть мопедов сбита над Киевом",
     ] {
         assert!(
             read(text).iter().all(|r| r.phase == Phase::Threat),
             "{text}"
         );
     }
+    // An interception is read as one, and is still not an all-clear.
+    let readings = read("часть мопедов сбита над Киевом");
+    assert_eq!(readings.len(), 1);
+    assert_eq!(readings[0].phase, Phase::Intercepted);
+}
+
+#[test]
+fn an_interception_counts_what_it_ends_and_ends_nothing_else() {
+    for (text, count) in [
+        ("сбит 1 мопед над Киевом", Some(1)),
+        ("над Броварами збито 2 реактивних шахеди", Some(2)),
+        ("знищено чотири шахеди над Київщиною", Some(4)),
+        ("уничтожены мопеды над Киевом", None),
+    ] {
+        let readings = read(text);
+        assert_eq!(readings.len(), 1, "{text}");
+        assert_eq!(readings[0].phase, Phase::Intercepted, "{text}");
+        assert_eq!(readings[0].count, count, "{text}");
+    }
+    // Not shot down, or only being shot at, is no interception.
+    for text in [
+        "мопед не сбит, летит на Киев",
+        "по мопеду над Киевом пытаются збити",
+    ] {
+        assert!(
+            read(text).iter().all(|r| r.phase == Phase::Threat),
+            "{text}"
+        );
+    }
+    // A sentence that also calls the threat off is an all-clear, read as narrowly as before.
+    assert_eq!(
+        read("мопед над Одессой сбит, минус")[0].phase,
+        Phase::Cleared
+    );
+}
+
+#[test]
+fn a_count_belongs_to_the_kind_it_stands_before() {
+    let readings = read("3 мопеда на Киев и 2 баллистики на Днепр");
+    let counts: Vec<_> = readings.iter().map(|r| (r.kind, r.count)).collect();
+    assert!(
+        counts.contains(&(Some(HazardKind::Drone), Some(3))),
+        "{counts:?}"
+    );
+    assert!(
+        counts.contains(&(Some(HazardKind::BallisticMissile), Some(2))),
+        "{counts:?}"
+    );
+    assert_eq!(read("2 реактивных мопеда на Киев")[0].count, Some(2));
+    assert_eq!(read("мопеды на Киев")[0].count, None);
+    // A number of minutes or kilometres counts no objects.
+    assert_eq!(read("через 5 минут мопед будет над Киевом")[0].count, None);
+    assert_eq!(read("2026 мопед на Киев")[0].count, None);
 }
 
 #[test]

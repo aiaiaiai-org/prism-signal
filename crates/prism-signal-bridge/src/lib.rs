@@ -132,7 +132,19 @@ pub fn bridge(readings: &[Reading], rules: &BridgeRules) -> Bridged {
         }
         for place in places {
             match observation(reading, kind, place, rules) {
-                Ok(observation) => out.observations.push(observation),
+                Ok(observation) => {
+                    if observation.stance == Stance::Neutralized {
+                        // Until tracks can subtract objects, an interception keeps saying what
+                        // it said before: something of that kind was in the air there.
+                        let mut threat = observation.clone();
+                        threat.stance = Stance::Threat;
+                        threat.ttl = rules.threat_ttl(kind);
+                        // The count is of objects ended, not of objects still flying.
+                        threat.count = None;
+                        out.observations.push(threat);
+                    }
+                    out.observations.push(observation);
+                }
                 Err(error) => out.skipped.push(Skip::Geometry(match error {
                     CoverError::InvalidGeometry(what) => what,
                     CoverError::TooLarge { .. } => "too large",
@@ -155,6 +167,7 @@ fn observation(
     let (stance, ttl) = match reading.phase {
         Phase::Threat => (Stance::Threat, rules.threat_ttl(kind)),
         Phase::Cleared => (Stance::Clear, ttl(rules.clear_minutes)),
+        Phase::Intercepted => (Stance::Neutralized, ttl(rules.clear_minutes)),
     };
     let mut matched = Vec::new();
     if reading.kind_inherited {
@@ -164,7 +177,7 @@ fn observation(
         source_id: reading.source_id.clone(),
         kind: kind_of(kind),
         stance,
-        count: None,
+        count: reading.count,
         observed_at: reading.published_at,
         geometry,
         ttl,
@@ -228,6 +241,19 @@ mod tests {
             o.geometry,
             prism_signal_core::Geometry::Polygon { .. }
         ));
+    }
+
+    #[test]
+    fn an_interception_is_a_counted_neutralization_and_still_a_threat_until_tracks_exist() {
+        let b = bridged("сбит 1 мопед над Киевом");
+        assert_eq!(
+            names(&b),
+            [("Київ", Stance::Threat), ("Київ", Stance::Neutralized)]
+        );
+        assert_eq!(b.observations[0].count, None);
+        assert_eq!(b.observations[0].ttl.get(), 30 * 60);
+        assert_eq!(b.observations[1].count, Some(1));
+        assert_eq!(bridged("3 мопеда на Киев").observations[0].count, Some(3));
     }
 
     #[test]

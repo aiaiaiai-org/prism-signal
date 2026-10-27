@@ -106,6 +106,20 @@
    "нема"
   ]
  },
+ "intercepted": {
+  "forms": [
+   "сбит", "сбита", "сбито", "сбиты", "сбили", "сбиваем",
+   "збито", "збитий", "збита", "збили",
+   "уничтожен", "уничтожена", "уничтожено", "уничтожены", "уничтожили",
+   "знищено", "знищений", "знищена", "знищені", "знищили",
+   "перехвачен", "перехвачено", "перехвачены", "перехватили",
+   "перехоплено", "перехоплений", "перехоплені", "перехопили"
+  ],
+  "note": "an interception ends the objects it counts and nothing else: 'сбит 1 мопед' says nothing about others still in the air, so it is not an all-clear. Exact forms only, since a stem such as 'збит' also takes 'збитки', and 'збиті' folds to the infinitive 'збити'. A negator directly before voids it: 'не сбит'",
+  "negated_by": [
+   "не"
+  ]
+ },
  "cues": {
   "target": [
    "к",

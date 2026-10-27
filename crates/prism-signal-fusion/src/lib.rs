@@ -555,6 +555,9 @@ pub fn assess(
                 });
                 open.insert(slot, episode);
             }
+            // An interception ends the objects it counts, which places cannot express: it neither
+            // renews nor retracts an assessment. Tracks will use it.
+            Stance::Neutralized => {}
             Stance::Clear => {
                 if contradicted(item) {
                     continue;

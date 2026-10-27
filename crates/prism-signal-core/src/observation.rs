@@ -269,8 +269,11 @@ impl HazardKind {
 pub enum Stance {
     /// The hazard is reported as present or approaching.
     Threat,
-    /// The source reports the hazard as destroyed, gone, or over.
+    /// The source reports the hazard as gone or over: an all-clear.
     Clear,
+    /// The source reports some objects shot down. It ends the objects it counts (`count`, one
+    /// when absent), never the threat as a whole: others may still be in the air.
+    Neutralized,
 }
 
 /// Source-declared confidence. Never a percentage: a source that does not declare one

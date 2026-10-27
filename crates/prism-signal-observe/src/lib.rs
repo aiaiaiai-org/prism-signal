@@ -186,7 +186,7 @@ impl<'g> Normalizer<'g> {
             let stance = mention.stance;
             let ttl = match stance {
                 Stance::Threat => self.rules.threat_ttl(mention.kind),
-                Stance::Clear => self.rules.clear,
+                Stance::Clear | Stance::Neutralized => self.rules.clear,
             };
             let mut located = false;
             for place in places
