@@ -1,6 +1,10 @@
 # Threat tracking
 
-Status: **design**. Nothing below is built yet; the order of work is at the end.
+Status: **design, agreed**. Nothing below is built yet; the order of work is at the end.
+
+Decided: a placeless clear ends only that source's own tracks from the last hour; a local news
+channel alone can raise 🟡 but not ring 🔴; official alerts come from
+[alerts.in.ua](https://alerts.in.ua) through the hub.
 
 ## Why
 
@@ -212,8 +216,9 @@ Each step is its own pull request and leaves everything working:
    above.
 4. **Places**: oblast and city regions as multipolygons (holes, exclaves), and city districts
    scoped to their city.
-5. **Official alerts**: a hub source for community-level official alerts and their boundaries,
-   as a separate layer the status leads with.
+5. **Official alerts**: a hub source reading alerts.in.ua (community level, with its token as a
+   hub secret) and community boundaries, as a separate layer the status leads with. It needs no
+   tracking and can be built alongside steps 1 to 4.
 6. **Hub and Porter**: active tracks per person until ended, one board and one status per person
    through the bot's edit and delete contract, and the `observe` reader's interception reading
    aligned with step 1.
