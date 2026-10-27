@@ -13,8 +13,8 @@ Built so far, and what it does not do yet:
   yet: a report without a kind word gives no track;
 - a clear that names no place never reaches fusion (the bridge drops it), so the placeless-clear
   rule is not applied yet;
-- districts and regions wait on step 4, and a place the gazetteer does not know in a given case
-  (`над Броварами`) gives no observation.
+- Kyiv's districts are named when the post names Kyiv; a local channel that never writes `Київ`
+  is not yet a context of its own, and regions (oblasts, exclaves) wait on the rest of step 4.
 
 Decided: a placeless clear ends only that source's own tracks from the last hour; a local news
 channel alone can raise 🟡 but not ring 🔴; official alerts come from

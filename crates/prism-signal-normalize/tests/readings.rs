@@ -506,3 +506,43 @@ fn a_plural_town_is_found_in_the_instrumental_case() {
         assert_eq!(places(&readings[0]), [(name, PlaceRole::Target)], "{text}");
     }
 }
+
+fn named(text: &str) -> Vec<(String, PlaceRole)> {
+    read(text)
+        .iter()
+        .flat_map(|r| r.places.iter().map(|p| (p.name.clone(), p.role)))
+        .collect()
+}
+
+#[test]
+fn a_kyiv_district_is_named_when_the_post_names_kyiv() {
+    for (text, district) in [
+        ("Київ: мопед над Оболонню", "Оболонь"),
+        ("Киев: шахед кружит над Троещиной", "Троєщина"),
+        ("мопед на Киев, сейчас над Подолом", "Поділ"),
+        ("Київ\nдрон над Харківським масивом", "Харківський масив"),
+        ("Киев: мопед над Позняками", "Позняки"),
+    ] {
+        assert!(
+            named(text).contains(&(district.to_owned(), PlaceRole::Target)),
+            "{text}: {:?}",
+            named(text)
+        );
+    }
+}
+
+#[test]
+fn a_district_without_its_city_or_as_an_ordinary_word_is_no_place() {
+    // Other towns have an Оболонь, and `поділ` and `сирець` are ordinary words.
+    for text in [
+        "мопед над Оболонью",
+        "Київ: шахеди, поділ на групи",
+        "Киев: мопед, сирець на складі",
+    ] {
+        let districts: Vec<_> = named(text)
+            .into_iter()
+            .filter(|(name, _)| ["Оболонь", "Поділ", "Сирець"].contains(&name.as_str()))
+            .collect();
+        assert!(districts.is_empty(), "{text}: {districts:?}");
+    }
+}

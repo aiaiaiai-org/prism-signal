@@ -1693,6 +1693,342 @@
     ],
     "max_suffix": 2
    }
+  },
+  {
+   "id": "geonames:8519916",
+   "name": "Оболонь",
+   "lat": 50.5132,
+   "lon": 30.5055,
+   "reach_km": 4,
+   "within": "geonames:703448",
+   "match": {
+    "stems": [
+     "оболон"
+    ],
+    "capitalized": true
+   }
+  },
+  {
+   "id": "geonames:688758",
+   "name": "Троєщина",
+   "lat": 50.5114,
+   "lon": 30.6025,
+   "reach_km": 4,
+   "within": "geonames:703448",
+   "match": {
+    "stems": [
+     "троєщин",
+     "троещин"
+    ],
+    "capitalized": true
+   }
+  },
+  {
+   "id": "geonames:13580094",
+   "name": "Позняки",
+   "lat": 50.4026,
+   "lon": 30.6235,
+   "reach_km": 4,
+   "within": "geonames:703448",
+   "match": {
+    "stems": [
+     "позняк"
+    ],
+    "forms": [
+     "позняками"
+    ],
+    "capitalized": true
+   }
+  },
+  {
+   "id": "geonames:13580116",
+   "name": "Осокорки",
+   "lat": 50.3808,
+   "lon": 30.6015,
+   "reach_km": 4,
+   "within": "geonames:703448",
+   "match": {
+    "stems": [
+     "осокорк"
+    ],
+    "forms": [
+     "осокорками"
+    ],
+    "capitalized": true
+   }
+  },
+  {
+   "id": "geonames:13580317",
+   "name": "Харківський масив",
+   "lat": 50.4085,
+   "lon": 30.6601,
+   "reach_km": 4,
+   "within": "geonames:703448",
+   "match": {
+    "stems": [
+     "харківськ масив",
+     "харьковск массив"
+    ],
+    "max_suffix": 3,
+    "capitalized": true
+   }
+  },
+  {
+   "id": "geonames:13580095",
+   "name": "Дарниця",
+   "lat": 50.416,
+   "lon": 30.6953,
+   "reach_km": 4,
+   "within": "geonames:703448",
+   "match": {
+    "stems": [
+     "дарниц"
+    ],
+    "capitalized": true
+   }
+  },
+  {
+   "id": "geonames:13580119",
+   "name": "Лісовий масив",
+   "lat": 50.4725,
+   "lon": 30.6311,
+   "reach_km": 4,
+   "within": "geonames:703448",
+   "match": {
+    "stems": [
+     "лісов масив",
+     "лесн массив"
+    ],
+    "max_suffix": 3,
+    "capitalized": true
+   }
+  },
+  {
+   "id": "geonames:13580324",
+   "name": "Русанівка",
+   "lat": 50.44,
+   "lon": 30.5968,
+   "reach_km": 4,
+   "within": "geonames:703448",
+   "match": {
+    "stems": [
+     "русанівк",
+     "русановк"
+    ],
+    "capitalized": true
+   }
+  },
+  {
+   "id": "geonames:13580096",
+   "name": "Березняки",
+   "lat": 50.4263,
+   "lon": 30.6022,
+   "reach_km": 4,
+   "within": "geonames:703448",
+   "match": {
+    "stems": [
+     "березняк"
+    ],
+    "forms": [
+     "березняками"
+    ],
+    "capitalized": true
+   }
+  },
+  {
+   "id": "geonames:13535747",
+   "name": "Святошин",
+   "lat": 50.4634,
+   "lon": 30.3461,
+   "reach_km": 4,
+   "within": "geonames:703448",
+   "match": {
+    "stems": [
+     "святошин"
+    ],
+    "capitalized": true
+   }
+  },
+  {
+   "id": "geonames:13580103",
+   "name": "Виноградар",
+   "lat": 50.5143,
+   "lon": 30.4245,
+   "reach_km": 4,
+   "within": "geonames:703448",
+   "match": {
+    "stems": [
+     "виноградар"
+    ],
+    "capitalized": true
+   }
+  },
+  {
+   "id": "geonames:13580112",
+   "name": "Теремки",
+   "lat": 50.3705,
+   "lon": 30.4588,
+   "reach_km": 4,
+   "within": "geonames:703448",
+   "match": {
+    "stems": [
+     "теремк"
+    ],
+    "forms": [
+     "теремками"
+    ],
+    "capitalized": true
+   }
+  },
+  {
+   "id": "geonames:13535744",
+   "name": "Голосіїв",
+   "lat": 50.3443,
+   "lon": 30.5518,
+   "reach_km": 4,
+   "within": "geonames:703448",
+   "match": {
+    "stems": [
+     "голосіїв",
+     "голосієв",
+     "голосеев"
+    ],
+    "capitalized": true
+   }
+  },
+  {
+   "id": "geonames:13535745",
+   "name": "Печерськ",
+   "lat": 50.4444,
+   "lon": 30.5235,
+   "reach_km": 4,
+   "within": "geonames:703448",
+   "match": {
+    "stems": [
+     "печерськ",
+     "печерск"
+    ],
+    "capitalized": true
+   }
+  },
+  {
+   "id": "geonames:696877",
+   "name": "Поділ",
+   "lat": 50.4694,
+   "lon": 30.5163,
+   "reach_km": 4,
+   "within": "geonames:703448",
+   "match": {
+    "forms": [
+     "подол",
+     "подоле",
+     "подолом",
+     "подолу",
+     "подолі",
+     "поділ"
+    ],
+    "capitalized": true
+   }
+  },
+  {
+   "id": "geonames:13580041",
+   "name": "Нивки",
+   "lat": 50.4646,
+   "lon": 30.4059,
+   "reach_km": 4,
+   "within": "geonames:703448",
+   "match": {
+    "stems": [
+     "нивк"
+    ],
+    "forms": [
+     "нивками"
+    ],
+    "capitalized": true
+   }
+  },
+  {
+   "id": "geonames:13580126",
+   "name": "Сирець",
+   "lat": 50.4796,
+   "lon": 30.4449,
+   "reach_km": 4,
+   "within": "geonames:703448",
+   "match": {
+    "forms": [
+     "сирець",
+     "сирцем",
+     "сирцю",
+     "сирця",
+     "сирці",
+     "сырец",
+     "сырца",
+     "сырце",
+     "сырцом"
+    ],
+    "capitalized": true
+   }
+  },
+  {
+   "id": "geonames:13580113",
+   "name": "Відрадний",
+   "lat": 50.4319,
+   "lon": 30.4223,
+   "reach_km": 4,
+   "within": "geonames:703448",
+   "match": {
+    "stems": [
+     "відрадн",
+     "отрадн"
+    ],
+    "max_suffix": 3,
+    "capitalized": true
+   }
+  },
+  {
+   "id": "geonames:13546520",
+   "name": "Солом'янка",
+   "lat": 50.4284,
+   "lon": 30.4521,
+   "reach_km": 4,
+   "within": "geonames:703448",
+   "match": {
+    "stems": [
+     "солом'янк",
+     "соломенк"
+    ],
+    "capitalized": true
+   }
+  },
+  {
+   "id": "geonames:13580127",
+   "name": "Куренівка",
+   "lat": 50.4937,
+   "lon": 30.471,
+   "reach_km": 4,
+   "within": "geonames:703448",
+   "match": {
+    "stems": [
+     "куренівк",
+     "куреневк"
+    ],
+    "capitalized": true
+   }
+  },
+  {
+   "id": "geonames:13580325",
+   "name": "Академмістечко",
+   "lat": 50.4694,
+   "lon": 30.3622,
+   "reach_km": 4,
+   "within": "geonames:703448",
+   "match": {
+    "stems": [
+     "академмістечк",
+     "академгородк"
+    ],
+    "capitalized": true
+   }
   }
  ]
 }

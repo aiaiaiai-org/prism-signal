@@ -72,7 +72,8 @@ A place has stems, exact forms, exclusions, and a `max_suffix`:
 - an exact form matches the whole word, for names such as `Суми` where a stem would match `сумма`;
 - `not` vetoes lookalikes (`Николаевка` for `Николаев`);
 - `capitalized` requires an initial capital for names that are also words: `Маяки`, `Ровно`, `Изюм`, `Авангард`;
-- a stem with a space is a multi-word name (`крив рог`, `бел церк`).
+- a stem with a space is a multi-word name (`крив рог`, `бел церк`);
+- `within` makes a place a district of a city: it is named only in a post that also names that city, anywhere in the post. Kyiv's districts (`Оболонь`, `Троєщина`, `Поділ`, …) are listed this way, capitalized, with a 4 km reach, so `Київ: мопед над Оболонню` points at Obolon rather than the whole city, while `поділ на групи`, a lone `Оболонь` (other towns have one), and a district in a post about another city are not places.
 
 Regions (`Киевская область`, `Николаевщина`) are deliberately not matched to their capitals. A region is not a city, and collapsing one onto the other would alert people who are nowhere near the threat.
 

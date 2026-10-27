@@ -81,6 +81,10 @@ def main():
             "lon": round(float(row[5]), 4),
             "reach_km": entry.get("reach_km", reach_km(population)),
         }
+        if "within" in entry:
+            if entry["within"] not in {e["geonames_id"] for e in spec["places"]}:
+                sys.exit(f"{entry['name']} is within {entry['within']}, which the spec does not list")
+            place["within"] = f"geonames:{entry['within']}"
         match = {k: entry[k] for k in ("stems", "forms", "not", "max_suffix", "capitalized") if k in entry}
         if not match.get("stems") and not match.get("forms"):
             sys.exit(f"{entry['name']} has neither stems nor forms")

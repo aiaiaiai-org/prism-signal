@@ -3,7 +3,7 @@
 
 //! The place vocabulary: which words in running text name which located place.
 
-use std::collections::HashSet;
+use std::collections::{BTreeSet, HashSet};
 
 use serde::Deserialize;
 
@@ -24,6 +24,10 @@ pub struct Place {
     pub lon: f64,
     /// Radius in kilometres around the centre within which a person counts as being there.
     pub reach_km: u32,
+    /// The city a district belongs to, `geonames:<id>`. A district is named only in a post that
+    /// also names its city: `Поділ` and `Сирець` are ordinary words too, and other towns have an
+    /// `Оболонь`.
+    pub within: Option<String>,
 }
 
 #[derive(Deserialize)]
@@ -42,6 +46,8 @@ struct PlaceDoc {
     lat: f64,
     lon: f64,
     reach_km: u32,
+    #[serde(default)]
+    within: Option<String>,
     #[serde(rename = "match")]
     matching: MatchDoc,
 }
@@ -127,6 +133,7 @@ impl Gazetteer {
                     lat: place.lat,
                     lon: place.lon,
                     reach_km: place.reach_km,
+                    within: place.within,
                 },
                 patterns,
                 excluded: excluded.iter().map(|word| fold(word)).collect(),
@@ -163,9 +170,22 @@ impl Gazetteer {
     ///
     /// The longest match wins; among equal lengths the earlier entry wins, so the result is
     /// deterministic.
-    pub(crate) fn match_at(&self, tokens: &[Token], at: usize) -> Option<(&Place, usize)> {
+    pub(crate) fn match_at(
+        &self,
+        tokens: &[Token],
+        at: usize,
+        cities: &BTreeSet<String>,
+    ) -> Option<(&Place, usize)> {
         let mut best: Option<(&Place, usize)> = None;
         for entry in &self.entries {
+            if entry
+                .place
+                .within
+                .as_ref()
+                .is_some_and(|city| !cities.contains(city))
+            {
+                continue;
+            }
             for pattern in &entry.patterns {
                 let len = pattern.len();
                 if best.is_some_and(|(_, best_len)| best_len >= len) {
@@ -187,6 +207,25 @@ impl Gazetteer {
             }
         }
         best
+    }
+}
+
+impl Gazetteer {
+    /// The places a post names that are not districts: the cities its districts may belong to.
+    pub(crate) fn cities_named(&self, tokens: &[Token]) -> BTreeSet<String> {
+        let none = BTreeSet::new();
+        let mut named = BTreeSet::new();
+        let mut i = 0;
+        while i < tokens.len() {
+            match self.match_at(tokens, i, &none) {
+                Some((place, len)) => {
+                    named.insert(place.id.clone());
+                    i += len;
+                }
+                None => i += 1,
+            }
+        }
+        named
     }
 }
 
@@ -214,7 +253,7 @@ mod tests {
         let tokens = tokenize(text);
         (0..tokens.len()).find_map(|i| {
             gazetteer
-                .match_at(&tokens, i)
+                .match_at(&tokens, i, &gazetteer.cities_named(&tokens))
                 .map(|(place, len)| (place.name.clone(), len))
         })
     }
