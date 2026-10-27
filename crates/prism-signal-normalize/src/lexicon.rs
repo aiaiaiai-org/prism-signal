@@ -15,6 +15,9 @@ struct LexiconDoc {
     version: String,
     kinds: KindsDoc,
     cleared: WordListDoc,
+    /// Words that report objects shot down (`сбит`). Absent in an older document.
+    #[serde(default)]
+    intercepted: Option<WordListDoc>,
     cues: CuesDoc,
     conjunctions: Vec<String>,
     fillers: Vec<String>,
@@ -81,6 +84,8 @@ pub(crate) struct Lexicon {
     cleared_phrases: Vec<Vec<WordPattern>>,
     cleared_negators: WordSet,
     cleared_negators_after: WordSet,
+    intercepted: WordSet,
+    intercepted_negators: WordSet,
     cues: Vec<(PlaceRole, WordSet)>,
     conjunctions: WordSet,
     fillers: WordSet,
@@ -118,6 +123,14 @@ impl Lexicon {
             cleared: doc.cleared.set()?,
             cleared_negators: WordSet::of_forms(&doc.cleared.negated_by)?,
             cleared_negators_after: WordSet::of_forms(&doc.cleared.negated_after)?,
+            intercepted: match &doc.intercepted {
+                Some(list) => list.set()?,
+                None => WordSet::default(),
+            },
+            intercepted_negators: match &doc.intercepted {
+                Some(list) => WordSet::of_forms(&list.negated_by)?,
+                None => WordSet::default(),
+            },
             cleared_phrases: doc
                 .cleared
                 .phrases
@@ -185,6 +198,20 @@ impl Lexicon {
             .take_while(|next| !next.barrier_before)
             .any(|next| self.cleared_negators_after.matches(&next.folded));
         !(negated_before || negated_after)
+    }
+
+    /// Whether `tokens[at]` reports objects shot down (`сбит`, `знищено`), and is not voided by
+    /// a negator directly before it (`не сбит`).
+    ///
+    /// An interception is not an all-clear: it ends the objects it counts, not the threat.
+    pub fn is_intercepted_at(&self, tokens: &[Token], at: usize) -> bool {
+        let Some(token) = tokens.get(at) else {
+            return false;
+        };
+        self.intercepted.matches(&token.folded)
+            && !(!token.barrier_before
+                && at > 0
+                && self.intercepted_negators.matches(&tokens[at - 1].folded))
     }
 
     /// Whether a multi-word all-clear such as `больше не было` starts at `tokens[at]`.

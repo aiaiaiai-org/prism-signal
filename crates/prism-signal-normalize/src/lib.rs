@@ -23,7 +23,7 @@ mod lexicon;
 mod text;
 mod words;
 
-use std::collections::BTreeSet;
+use std::collections::{BTreeMap, BTreeSet};
 
 use prism_signal_core::{Evidence, ExternalId, SourceId, Timestamp};
 use serde::{Deserialize, Serialize};
@@ -91,6 +91,9 @@ pub enum Phase {
     Threat,
     /// The sentence calls a threat off, as `минус по ракетам` does.
     Cleared,
+    /// The sentence reports objects shot down, as `сбит 1 мопед над Киевом` does. It ends the
+    /// objects it counts, not the threat: others may still be in the air.
+    Intercepted,
 }
 
 /// How a sentence relates a place to the threat.
@@ -152,6 +155,9 @@ pub struct Reading {
     pub kind_inherited: bool,
     /// Whether the sentence reports or calls off the threat.
     pub phase: Phase,
+    /// How many objects the sentence counts for this kind (`3 мопеда`), when it says.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub count: Option<u32>,
     /// Known places the sentence names, with roles, in reading order.
     pub places: Vec<PlaceMention>,
     /// Capitalised words that follow a target or via cue but are not in the gazetteer, as
@@ -287,8 +293,14 @@ impl Normalizer {
             }
             if let Some(kind) = self.lexicon.kind_for_source(&token.folded, source) {
                 clause.kinds.insert(kind);
+                if let Some(count) = count_before(tokens, i) {
+                    let counted = clause.counts.entry(kind).or_default();
+                    *counted = (*counted).max(count);
+                }
             } else if self.lexicon.is_cleared_at(tokens, i) {
                 clause.cleared_word = true;
+            } else if self.lexicon.is_intercepted_at(tokens, i) {
+                clause.intercepted = true;
             } else if matches!(context, Some(PlaceRole::Target | PlaceRole::Via))
                 && self.lexicon.cue(&token.folded).is_none()
                 && !self.lexicon.is_conjunction(&token.folded)
@@ -342,6 +354,72 @@ impl Normalizer {
     }
 }
 
+/// Words that count objects, past the digits.
+const NUMBER_WORDS: [(&str, u32); 13] = [
+    ("один", 1),
+    ("одна", 1),
+    ("одно", 1),
+    ("два", 2),
+    ("две", 2),
+    ("дви", 2),
+    ("три", 3),
+    ("четыре", 4),
+    ("чотири", 4),
+    // `пять` and `пʼять` fold alike.
+    ("пять", 5),
+    ("шесть", 6),
+    ("шисть", 6),
+    ("десяток", 10),
+];
+
+/// Units after which a number counts time or distance, not objects: `через 5 минут`.
+const UNITS: [&str; 12] = [
+    "минут",
+    "минуты",
+    "мин",
+    "хвилин",
+    "хвилини",
+    "хв",
+    "секунд",
+    "сек",
+    "км",
+    "часа",
+    "годин",
+    "годину",
+];
+
+/// The largest count taken from text. A bigger number is a date, a distance, or a typo.
+const MAX_COUNT: u32 = 100;
+
+/// The number counting the kind word at `at`: a number up to two words before it in the same
+/// sentence (`3 мопеда`, `2 реактивных мопеда`, `10+ шахедов`), unless a unit follows the
+/// number (`через 5 минут мопед`).
+fn count_before(tokens: &[Token], at: usize) -> Option<u32> {
+    let mut j = at;
+    for _ in 0..2 {
+        if j == 0 || tokens[j].barrier_before {
+            return None;
+        }
+        j -= 1;
+        let word = tokens[j].folded.as_str();
+        let number = if word.bytes().all(|b| b.is_ascii_digit()) {
+            word.parse::<u32>().ok()
+        } else {
+            NUMBER_WORDS
+                .iter()
+                .find(|(form, _)| *form == word)
+                .map(|(_, n)| *n)
+        };
+        if let Some(number) = number {
+            let unit = tokens
+                .get(j + 1)
+                .is_some_and(|next| UNITS.contains(&next.folded.as_str()));
+            return (!unit && (1..=MAX_COUNT).contains(&number)).then_some(number);
+        }
+    }
+    None
+}
+
 /// In a sentence that holds an all-clear word, a comma that starts a new statement ends the clause.
 ///
 /// `по первым 2 КАБам минус, еще 2 КАБа подлетают к Черноморску` calls off the first two and
@@ -390,6 +468,10 @@ struct Clause {
     cleared_word: bool,
     /// A weaker all-clear phrase (`больше не`) was seen.
     cleared_phrase: bool,
+    /// An interception word (`сбит`) was seen.
+    intercepted: bool,
+    /// How many objects of each kind the sentence counts, where it says.
+    counts: BTreeMap<HazardKind, u32>,
     /// The kinds were carried over from an earlier sentence.
     inherited: bool,
     /// The sentence opens with a number, as an item of a list does.
@@ -483,8 +565,12 @@ impl Clause {
         {
             self.kinds.remove(&HazardKind::Missile);
         }
+        // An all-clear outranks an interception in the same sentence: it ends more, and is read
+        // just as narrowly as before.
         let phase = if self.cleared() {
             Phase::Cleared
+        } else if self.intercepted {
+            Phase::Intercepted
         } else {
             Phase::Threat
         };
@@ -510,6 +596,7 @@ impl Clause {
                 kind,
                 kind_inherited: self.inherited,
                 phase,
+                count: kind.and_then(|kind| self.counts.get(&kind).copied()),
                 places: self.places.clone(),
                 unresolved: self.unresolved.clone(),
             })

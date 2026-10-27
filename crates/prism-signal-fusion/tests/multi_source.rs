@@ -263,3 +263,31 @@ fn channel_ids_are_sorted_without_priority_or_duplicate_weight() {
         ]
     );
 }
+
+#[test]
+fn an_interception_neither_starts_renews_nor_retracts_an_assessment() {
+    let alone = [report(
+        "kpszsu",
+        1,
+        "2026-09-28T22:00:00Z",
+        Stance::Neutralized,
+    )];
+    let result = assessed(&alone, "2026-09-28T22:01:00Z");
+    assert!(result.assessments.is_empty());
+    assert!(result.events.is_empty());
+
+    let observations = [
+        report("kpszsu", 1, "2026-09-28T22:00:00Z", Stance::Threat),
+        report("kpszsu", 2, "2026-09-28T22:10:00Z", Stance::Neutralized),
+    ];
+    let result = assessed(&observations, "2026-09-28T22:11:00Z");
+    assert_eq!(result.assessments.len(), 1);
+    assert_eq!(result.assessments[0].status, Status::Active);
+    assert_eq!(result.assessments[0].revision, 1, "not renewed");
+    assert!(
+        result
+            .events
+            .iter()
+            .all(|event| event.kind == EventKind::Issued)
+    );
+}
