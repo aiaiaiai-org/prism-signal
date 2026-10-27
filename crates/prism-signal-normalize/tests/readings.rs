@@ -370,9 +370,12 @@ fn an_all_clear_ends_the_carry_over() {
 fn unknown_capitalised_targets_are_reported_never_guessed() {
     let readings = read("3 бандероли летят в сторону Виноградара Одесской области");
     assert_eq!(readings.len(), 1);
-    assert!(readings[0].places.is_empty());
-    assert_eq!(readings[0].unresolved, ["Виноградара", "Одесской"]);
-    assert!(!readings[0].actionable());
+    // The village is not guessed; the region the text names is where it points.
+    assert_eq!(
+        places(&readings[0]),
+        [("Одеська область", PlaceRole::Target)]
+    );
+    assert_eq!(readings[0].unresolved, ["Виноградара"]);
 
     // Where a launch came from is not a candidate for the gazetteer.
     let origin = read("пуски баллистики с Курска");
@@ -380,8 +383,11 @@ fn unknown_capitalised_targets_are_reported_never_guessed() {
 }
 
 #[test]
-fn regions_and_common_words_are_not_read_as_places() {
-    assert!(read("мопеды над Николаевщиной")[0].places.is_empty());
+fn a_region_is_a_region_and_common_words_are_not_places() {
+    assert_eq!(
+        places(&read("мопеды над Николаевщиной")[0]),
+        [("Миколаївська область", PlaceRole::Target)]
+    );
     assert!(read("2 мопеда летят ровно на север")[0].places.is_empty());
     assert!(read("мопеды летят на маяки")[0].places.is_empty());
 }

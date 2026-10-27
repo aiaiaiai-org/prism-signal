@@ -23,6 +23,9 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent / "crates" / "prism-signal-normalize" / "data"
 SPEC = ROOT / "gazetteer.spec.json"
+# Regions come from the bridge's region cells, built from OCHA boundaries by
+# `cargo run -p prism-signal-geo --example build-regions`.
+REGIONS = ROOT.parent.parent / "prism-signal-bridge" / "data" / "regions.v1.json"
 OUT = ROOT / "gazetteer.v1.json"
 DUMP_URL = "https://download.geonames.org/export/dump/UA.zip"
 
@@ -63,9 +66,27 @@ def load_dump(arg):
 def main():
     rows = load_dump(sys.argv[1] if len(sys.argv) > 1 else None)
     spec = json.loads(SPEC.read_text(encoding="utf-8"))
+    regions = {r["id"]: r for r in json.loads(REGIONS.read_text(encoding="utf-8"))["regions"]}
     places = []
     seen = set()
     for entry in spec["places"]:
+        if "region" in entry:
+            rid = f"ua-adm1:{entry['region']}"
+            region = regions.get(rid)
+            if region is None or rid in seen:
+                sys.exit(f"region {entry['region']} ({entry['name']}) is unknown or listed twice")
+            seen.add(rid)
+            match = {k: entry[k] for k in ("stems", "forms", "not", "max_suffix", "capitalized") if k in entry}
+            places.append({
+                "id": rid,
+                "name": entry["name"],
+                "lat": region["lat"],
+                "lon": region["lon"],
+                "reach_km": int(region["reach_km"]),
+                "match": match,
+            })
+            print(f"{rid:>12} {entry['name']:<28} reach={int(region['reach_km'])}", file=sys.stderr)
+            continue
         gid = entry["geonames_id"]
         if gid in seen:
             sys.exit(f"duplicate geonames_id {gid}")
@@ -82,7 +103,7 @@ def main():
             "reach_km": entry.get("reach_km", reach_km(population)),
         }
         if "within" in entry:
-            if entry["within"] not in {e["geonames_id"] for e in spec["places"]}:
+            if entry["within"] not in {e.get("geonames_id") for e in spec["places"]}:
                 sys.exit(f"{entry['name']} is within {entry['within']}, which the spec does not list")
             place["within"] = f"geonames:{entry['within']}"
         match = {k: entry[k] for k in ("stems", "forms", "not", "max_suffix", "capitalized") if k in entry}
@@ -99,7 +120,10 @@ def main():
         "version": "gazetteer.v1",
         "attribution": (
             "Coordinates and identifiers from GeoNames (https://www.geonames.org), "
-            "licensed CC BY 4.0. Spellings and reach radii are curated by aiaiaiai."
+            "licensed CC BY 4.0. Spellings and reach radii are curated by aiaiaiai. "
+            "Region centres and reaches derive from OCHA COD-AB Ukraine boundaries "
+            "(https://data.humdata.org/dataset/cod-ab-ukr), source: State Scientific Production "
+            "Enterprise Kartographia, licensed CC BY-IGO 3.0."
         ),
         "places": places,
     }

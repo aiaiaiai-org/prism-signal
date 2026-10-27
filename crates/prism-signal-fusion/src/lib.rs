@@ -49,7 +49,7 @@ pub use tracks::{Motion, PathPoint, Track, TrackEvent, TrackEventKind, TrackPoli
 
 use prism_signal_core::{
     CellId, CellResolution, ConfidenceBand, ExternalId, Geometry, HazardKind, PlaceRole,
-    SignalObservation, SourceId, Stance, Timestamp,
+    SignalObservation, SourceId, Stance, Timestamp, is_region_place,
 };
 use prism_signal_geo::{CellSet, CoverError, cover, disc, expand};
 use serde::{Deserialize, Serialize};
@@ -421,6 +421,8 @@ pub fn assess(
 
     // Usable observations with their footprints, in a total order.
     let mut usable: Vec<(&SignalObservation, Footprint, HazardClass, String)> = Vec::new();
+    // Every known, well-formed observation, regions included, for tracks.
+    let mut observed: Vec<&SignalObservation> = Vec::new();
     for observation in observations {
         if observation.observed_at.as_datetime() > now {
             continue;
@@ -429,6 +431,21 @@ pub fn assess(
             out.skipped.push(Skipped {
                 evidence_id: observation.provenance.evidence_id.clone(),
                 code: "invalid_geometry".to_owned(),
+            });
+            continue;
+        }
+        observed.push(observation);
+        // A region (`на Київщину`) is not a place an assessment can stand for: it would alert
+        // everyone in the oblast as if the hazard were over their town. Tracks keep it apart.
+        if observation
+            .provenance
+            .place_id
+            .as_deref()
+            .is_some_and(is_region_place)
+        {
+            out.skipped.push(Skipped {
+                evidence_id: observation.provenance.evidence_id.clone(),
+                code: "region".to_owned(),
             });
             continue;
         }
@@ -639,7 +656,6 @@ pub fn assess(
     });
     out.assessments = closed;
     out.events = events;
-    let observed: Vec<&SignalObservation> = usable.iter().map(|item| item.0).collect();
     (out.tracks, out.track_events) = tracks::follow(&observed, policy, now);
     out
 }

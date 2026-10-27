@@ -10,19 +10,24 @@
 //!   text names as where something came from, or in passing, becomes nothing, so a launch site is
 //!   never an alert;
 //! - the observation's geometry is a disc around the place with the place's own reach, so fusion
-//!   needs no knowledge of how big a town is;
+//!   needs no knowledge of how big a town is. A region (`на Київщину`) is its own cells instead,
+//!   from official boundaries, so an exclave is in and a city it surrounds is out;
 //! - an all-clear becomes an observation only when it names both a kind and a place. One that
 //!   names a kind alone, or a place alone, cannot be expressed as located evidence, so it is not
 //!   emitted: the threat it meant to end expires on its validity window instead. A missed
 //!   all-clear leaves a threat to lapse; a misapplied one would hide a live threat;
 //! - a forwarded post is not the source's own report, so it yields nothing.
 
+use std::collections::BTreeMap;
+use std::sync::OnceLock;
+
 use prism_signal_core::{
-    HazardKind as Kind, ObservationProvenance, PlaceRole as Role, Position, SignalObservation,
-    Stance, TtlSeconds,
+    CellId, CellResolution, Geometry, HazardKind as Kind, ObservationProvenance, PlaceRole as Role,
+    Position, SignalObservation, Stance, TtlSeconds, is_region_place,
 };
-use prism_signal_geo::{CoverError, disc};
+use prism_signal_geo::{CellSet, CoverError, disc, uncompact};
 use prism_signal_normalize::{HazardKind, Phase, PlaceMention, PlaceRole, Reading};
+use serde::Deserialize;
 
 /// Normalizer name recorded in observation provenance.
 pub const NORMALIZER: &str = concat!("prism-signal-normalize/", env!("CARGO_PKG_VERSION"));
@@ -159,6 +164,53 @@ pub fn bridge(readings: &[Reading], rules: &BridgeRules) -> Bridged {
     out
 }
 
+#[derive(Deserialize)]
+struct RegionsDoc {
+    version: String,
+    regions: Vec<RegionDoc>,
+}
+
+#[derive(Deserialize)]
+struct RegionDoc {
+    id: String,
+    resolution: u8,
+    cells: Vec<String>,
+}
+
+/// The most cells one region may hold; the largest oblast has under 1,000.
+const REGION_MAX_CELLS: usize = 5_000;
+
+/// The cells of a first-level region, such as `ua-adm1:UA32`, from the shipped
+/// `data/regions.v1.json` (OCHA COD-AB boundaries, CC BY-IGO 3.0). `None` for an unknown id.
+pub fn region_cells(id: &str) -> Option<&'static CellSet> {
+    static REGIONS: OnceLock<BTreeMap<String, CellSet>> = OnceLock::new();
+    REGIONS
+        .get_or_init(|| {
+            let doc: RegionsDoc = serde_json::from_str(include_str!("../data/regions.v1.json"))
+                .expect("the shipped regions parse");
+            assert_eq!(
+                doc.version, "regions.v1",
+                "the shipped regions are regions.v1"
+            );
+            doc.regions
+                .into_iter()
+                .map(|region| {
+                    let resolution = CellResolution::try_from(region.resolution)
+                        .expect("a shipped region has a valid resolution");
+                    let ids: Vec<CellId> = region
+                        .cells
+                        .iter()
+                        .map(|cell| CellId::try_from(cell.clone()).expect("a shipped cell id"))
+                        .collect();
+                    let cells = uncompact(&ids, resolution, REGION_MAX_CELLS)
+                        .expect("a shipped region uncompacts");
+                    (region.id, cells)
+                })
+                .collect()
+        })
+        .get(id)
+}
+
 /// Where an observation stands in its post.
 struct InPost {
     statement: Option<u16>,
@@ -174,7 +226,16 @@ fn observation(
 ) -> Result<SignalObservation, CoverError> {
     let centre = Position::new(place.lon, place.lat)
         .map_err(|_| CoverError::InvalidGeometry("coordinate"))?;
-    let geometry = disc(centre, f64::from(place.reach_km), rules.disc_vertices)?;
+    let geometry = if is_region_place(&place.place_id) {
+        let cells =
+            region_cells(&place.place_id).ok_or(CoverError::InvalidGeometry("unknown region"))?;
+        Geometry::Cells {
+            resolution: cells.resolution,
+            cells: cells.cells.clone(),
+        }
+    } else {
+        disc(centre, f64::from(place.reach_km), rules.disc_vertices)?
+    };
     let (stance, ttl) = match reading.phase {
         Phase::Threat => (Stance::Threat, rules.threat_ttl(kind)),
         Phase::Cleared => (Stance::Clear, ttl(rules.clear_minutes)),
@@ -294,6 +355,24 @@ mod tests {
             .map(|o| (o.provenance.statement, o.count))
             .collect();
         assert_eq!(statements, [(Some(0), Some(2)), (Some(1), Some(3))]);
+    }
+
+    #[test]
+    fn a_region_is_its_own_cells_not_a_disc() {
+        let b = bridged("шахеды на Киевщину");
+        assert_eq!(names(&b), [("Київська область", Stance::Threat)]);
+        let o = &b.observations[0];
+        assert_eq!(o.provenance.place_id.as_deref(), Some("ua-adm1:UA32"));
+        let prism_signal_core::Geometry::Cells { resolution, cells } = &o.geometry else {
+            panic!("a region is cells");
+        };
+        assert_eq!(resolution.get(), 6);
+        assert!((700..1000).contains(&cells.len()), "{}", cells.len());
+        assert!(region_cells("ua-adm1:UA00").is_none());
+        // Every shipped region loads.
+        for code in ["UA01", "UA05", "UA32", "UA74", "UA80", "UA85"] {
+            assert!(region_cells(&format!("ua-adm1:{code}")).is_some(), "{code}");
+        }
     }
 
     #[test]

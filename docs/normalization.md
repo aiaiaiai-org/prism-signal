@@ -75,7 +75,9 @@ A place has stems, exact forms, exclusions, and a `max_suffix`:
 - a stem with a space is a multi-word name (`крив рог`, `бел церк`);
 - `within` makes a place a district of a city: it is named only in a post that also names that city, anywhere in the post. Kyiv's districts (`Оболонь`, `Троєщина`, `Поділ`, …) are listed this way, capitalized, with a 4 km reach, so `Київ: мопед над Оболонню` points at Obolon rather than the whole city, while `поділ на групи`, a lone `Оболонь` (other towns have one), and a district in a post about another city are not places.
 
-Regions (`Киевская область`, `Николаевщина`) are deliberately not matched to their capitals. A region is not a city, and collapsing one onto the other would alert people who are nowhere near the threat.
+Regions are places of their own, never their capitals. `Николаевщина`, `Київській області`, `Киевской обл.`, `над Буковиною`, and `Крим` name a first-level region with an id such as `ua-adm1:UA48`; collapsing one onto its capital would alert people who are nowhere near the threat. A region entry in the spec names its OCHA code (`"region": "UA32"`) instead of a GeoNames id; its centre and reach come from the bridge's region cells. Kyiv and Sevastopol cities are named as cities, not as regions.
+
+The bridge gives a region observation the region's own cells (`crates/prism-signal-bridge/data/regions.v1.json`): the H3 resolution 6 cells whose centres lie inside it, built from OCHA COD-AB boundaries ([CC BY-IGO 3.0](https://creativecommons.org/licenses/by/3.0/igo/legalcode), source: State Scientific Production Enterprise "Kartographia") by `cargo run -p prism-signal-geo --example build-regions -- ukr_admin1.geojson`. Exclaves are in their region (Slavutych is Kyiv oblast) and enclaves are out (Kyiv city is not Kyiv oblast, Kotsiubynske is).
 
 ## Place data
 
