@@ -1,6 +1,20 @@
 # Threat tracking
 
-Status: **design, agreed**. Nothing below is built yet; the order of work is at the end.
+Status: **steps 1 to 3 built** (reader, corridor, fusion tracks); places, official alerts, and
+the hub and Porter are not. The order of work is at the end.
+
+Built so far, and what it does not do yet:
+
+- a report's places are taken in the order its statement names them: the first is where the
+  object is, the last aimed one is its target;
+- matching uses the target, the place, and reach at the kind's top speed; it does not yet check
+  that a report lies toward the target;
+- `loitering` is not read yet (`по колу`), and an unknown kind (`air.unknown`) does not exist
+  yet: a report without a kind word gives no track;
+- a clear that names no place never reaches fusion (the bridge drops it), so the placeless-clear
+  rule is not applied yet;
+- districts and regions wait on step 4, and a place the gazetteer does not know in a given case
+  (`над Броварами`) gives no observation.
 
 Decided: a placeless clear ends only that source's own tracks from the last hour; a local news
 channel alone can raise 🟡 but not ring 🔴; official alerts come from
@@ -212,7 +226,7 @@ Each step is its own pull request and leaves everything working:
    count (`збито 2`), instead of being dropped. The bridge carries the count and a new
    `neutralized` stance; fusion v1 ignores that stance, so alerts do not change.
 2. **Geo**: corridor cover (a widened segment between two discs).
-3. **Fusion**: tracks, with policy tests replaying the archive's real posts, including the cases
+3. **Fusion** (built): tracks, with policy tests replaying the archive's real posts, including the cases
    above.
 4. **Places**: oblast and city regions as multipolygons (holes, exclaves), and city districts
    scoped to their city.
