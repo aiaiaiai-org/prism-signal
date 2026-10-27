@@ -24,6 +24,11 @@ A zone is a polygon. `cover(polygon, resolution)` returns the cells whose center
 - the result is sorted and deduplicated, so equal input gives equal output;
 - an optional compaction step may emit parents for transport, but the canonical form is the uniform resolution set.
 
+Two shapes are drawn for callers that have places rather than polygons:
+
+- `disc(center, radius_km, vertices)`: a circle as a polygon whose corners lie on it;
+- `corridor(from, from_radius_km, to, to_radius_km, vertices)`: both discs and the band joining them, the area a threat seen at `from` and heading for `to` may cross ([`tracking.md`](tracking.md)). It is the convex hull of the two discs, so it sits inside the true area by at most a disc's edge gap, and like a disc it is covered and then widened by one ring so nobody inside is missed. It is refused beyond 2000 km.
+
 Cell identifiers are the 64-bit H3 index rendered as a lowercase hexadecimal string, following the binding-safe identifier rule of the `0x1` Core contract.
 
 ## Fan-out without a subscriber registry

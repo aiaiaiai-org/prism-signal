@@ -145,6 +145,83 @@ pub fn disc(center: Position, radius_km: f64, vertices: usize) -> Result<Geometr
     Ok(Geometry::Polygon { rings: vec![ring] })
 }
 
+/// The longest corridor drawn, in km. Longer than any flight inside the country; a bound, so a
+/// request cannot ask for a continent.
+pub const MAX_CORRIDOR_KM: f64 = 2000.0;
+
+/// Everything within `from_radius_km` of `from`, within `to_radius_km` of `to`, and the band that
+/// joins them: the area a threat seen at `from` and heading for `to` may cross, as a polygon.
+///
+/// It is the convex hull of the two [`disc`]s of `vertices` corners each, so it sits inside the
+/// true area by at most a disc's own edge gap, and a cover widened by one ring of neighbours
+/// (see [`expand`]) misses nobody inside it. The hull is taken in a flat projection around the
+/// midpoint, which is exact enough for the few hundred kilometres a corridor spans. Equal input
+/// gives equal output, and `from` and `to` may be the same place, which gives the larger disc.
+pub fn corridor(
+    from: Position,
+    from_radius_km: f64,
+    to: Position,
+    to_radius_km: f64,
+    vertices: usize,
+) -> Result<Geometry, CoverError> {
+    let length = haversine_km(from, to);
+    if !length.is_finite() || length > MAX_CORRIDOR_KM {
+        return Err(CoverError::InvalidGeometry("corridor too long"));
+    }
+    let mut corners: Vec<Position> = Vec::with_capacity(2 * vertices);
+    for (center, radius) in [(from, from_radius_km), (to, to_radius_km)] {
+        let Geometry::Polygon { rings } = disc(center, radius, vertices)? else {
+            return Err(CoverError::InvalidGeometry("disc"));
+        };
+        let ring = rings[0].positions();
+        corners.extend_from_slice(&ring[..ring.len() - 1]);
+    }
+    let scale = ((from.lat() + to.lat()) / 2.0).to_radians().cos();
+    let flat = |p: &Position| (p.lon() * scale, p.lat());
+    corners.sort_by(|a, b| {
+        let (a, b) = (flat(a), flat(b));
+        a.0.total_cmp(&b.0).then(a.1.total_cmp(&b.1))
+    });
+    corners.dedup_by(|a, b| flat(a) == flat(b));
+    // Andrew's monotone chain: lower then upper hull, counter-clockwise in the projection.
+    let turn = |o: &Position, a: &Position, b: &Position| {
+        let (o, a, b) = (flat(o), flat(a), flat(b));
+        (a.0 - o.0) * (b.1 - o.1) - (a.1 - o.1) * (b.0 - o.0)
+    };
+    let mut hull: Vec<Position> = Vec::with_capacity(corners.len() + 1);
+    for pass in [
+        corners.as_slice(),
+        &corners.iter().rev().copied().collect::<Vec<_>>(),
+    ] {
+        let start = hull.len();
+        for point in pass {
+            while hull.len() >= start + 2
+                && turn(&hull[hull.len() - 2], &hull[hull.len() - 1], point) <= 0.0
+            {
+                hull.pop();
+            }
+            hull.push(*point);
+        }
+        hull.pop();
+    }
+    if hull.len() < 3 {
+        return Err(CoverError::InvalidGeometry("corridor"));
+    }
+    // Clockwise, as a disc is drawn.
+    hull.reverse();
+    hull.push(hull[0]);
+    let ring = Ring::try_from(hull).map_err(|_| CoverError::InvalidGeometry("corridor"))?;
+    Ok(Geometry::Polygon { rings: vec![ring] })
+}
+
+/// Great-circle distance in km.
+fn haversine_km(a: Position, b: Position) -> f64 {
+    let (p, q) = (a.lat().to_radians(), b.lat().to_radians());
+    let d = ((q - p) / 2.0).sin().powi(2)
+        + p.cos() * q.cos() * ((b.lon() - a.lon()).to_radians() / 2.0).sin().powi(2);
+    2.0 * EARTH_RADIUS_KM * d.sqrt().asin()
+}
+
 /// A cell set widened by `rings` rings of neighbours, sorted and deduplicated.
 ///
 /// A person is placed in the cell that contains them, and a cover holds the cells whose centers
@@ -511,6 +588,112 @@ mod tests {
         // The cell that holds the center is inside every disc's cover.
         let centre = cover(&Geometry::point(kyiv()), res(6), 1).unwrap();
         assert!(large.cells.contains(&centre.cells[0]));
+    }
+
+    // ---- corridor ----
+
+    fn chernihiv() -> Position {
+        pos(31.2893, 51.4982)
+    }
+
+    fn own_cell(at: Position) -> CellId {
+        cover(&Geometry::point(at), res(6), 1)
+            .unwrap()
+            .cells
+            .remove(0)
+    }
+
+    fn along(a: Position, b: Position, t: f64) -> Position {
+        pos(
+            a.lon() + (b.lon() - a.lon()) * t,
+            a.lat() + (b.lat() - a.lat()) * t,
+        )
+    }
+
+    #[test]
+    fn a_corridor_covers_both_ends_and_everyone_on_the_way() {
+        let band = 15.0;
+        let set = expand(
+            &cover(
+                &corridor(chernihiv(), band, kyiv(), band, 48).unwrap(),
+                res(6),
+                5000,
+            )
+            .unwrap(),
+            1,
+            5000,
+        )
+        .unwrap();
+        // Both discs are inside it.
+        for end in [chernihiv(), kyiv()] {
+            let disc_cells = cover(&disc(end, band, 48).unwrap(), res(6), 500).unwrap();
+            assert!(disc_cells.cells.iter().all(|c| set.cells.contains(c)));
+        }
+        // People along the way, and 0.95 of the band to either side of it.
+        let (dx, dy) = (
+            kyiv().lon() - chernihiv().lon(),
+            kyiv().lat() - chernihiv().lat(),
+        );
+        let scale = chernihiv().lat().to_radians().cos();
+        let norm = (dx * dx * scale * scale + dy * dy).sqrt();
+        let (nx, ny) = (-dy / norm / scale, dx * scale / norm);
+        for step in 0..=20 {
+            let on = along(chernihiv(), kyiv(), f64::from(step) / 20.0);
+            for side in [-0.95, 0.0, 0.95] {
+                let off = band * side / 111.2;
+                let person = pos(on.lon() + nx * off, on.lat() + ny * off);
+                assert!(
+                    set.cells.contains(&own_cell(person)),
+                    "step {step} side {side}"
+                );
+            }
+        }
+        // Far to the side is not.
+        let far = pos(
+            along(chernihiv(), kyiv(), 0.5).lon() + 1.5,
+            along(chernihiv(), kyiv(), 0.5).lat(),
+        );
+        assert!(!set.cells.contains(&own_cell(far)));
+    }
+
+    #[test]
+    fn a_corridor_is_deterministic_symmetric_and_bounded() {
+        let one = corridor(chernihiv(), 15.0, kyiv(), 12.0, 48).unwrap();
+        assert_eq!(one, corridor(chernihiv(), 15.0, kyiv(), 12.0, 48).unwrap());
+        let there = cover(&one, res(6), 5000).unwrap();
+        let back = cover(
+            &corridor(kyiv(), 12.0, chernihiv(), 15.0, 48).unwrap(),
+            res(6),
+            5000,
+        )
+        .unwrap();
+        assert_eq!(there, back);
+        // No length is a disc.
+        assert_eq!(
+            cover(
+                &corridor(kyiv(), 12.0, kyiv(), 12.0, 48).unwrap(),
+                res(6),
+                500
+            )
+            .unwrap(),
+            cover(&disc(kyiv(), 12.0, 48).unwrap(), res(6), 500).unwrap()
+        );
+        let lviv = pos(24.0297, 49.8397);
+        let moscow = pos(37.6173, 55.7558);
+        assert_eq!(
+            corridor(lviv, 10.0, pos(60.0, 40.0), 10.0, 48)
+                .unwrap_err()
+                .code(),
+            "invalid_geometry"
+        );
+        assert!(
+            corridor(lviv, 10.0, moscow, 10.0, 48).is_ok(),
+            "1200 km is drawable"
+        );
+        assert_eq!(
+            corridor(lviv, 0.0, kyiv(), 10.0, 48).unwrap_err().code(),
+            "invalid_geometry"
+        );
     }
 
     #[test]
