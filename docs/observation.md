@@ -22,7 +22,7 @@ A mention with no place in its span yields nothing and is reported as unlocated.
 | `geometry` | the gazetteer position of the place, as a point |
 | `ttl` | `NormalizeRules`, per kind for threats and one value for clear |
 | `confidence` | always absent: the channel declares none |
-| `provenance` | evidence id and URL, normalizer version, matched words, gazetteer place id and name; `place_role` (`target` or `via`) when the reader knows it |
+| `provenance` | evidence id and URL, normalizer version, matched words, gazetteer place id and name; `place_role` (`target` or `via`) when the reader knows it; `statement` and `place_order` (which statement of the post, and the place's position in it) for readers that tell, which `normalize` does and `observe` does not yet |
 
 Nothing is guessed. These cases yield no observation and are reported in `Normalized::skipped` instead:
 

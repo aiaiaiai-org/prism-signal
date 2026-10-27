@@ -111,7 +111,7 @@ fn located(place: &PlaceMention) -> bool {
 /// Converts the readings of one post.
 pub fn bridge(readings: &[Reading], rules: &BridgeRules) -> Bridged {
     let mut out = Bridged::default();
-    for reading in readings {
+    for (statement, reading) in readings.iter().enumerate() {
         if reading.forwarded {
             if !out.skipped.contains(&Skip::Forwarded) {
                 out.skipped.push(Skip::Forwarded);
@@ -130,8 +130,12 @@ pub fn bridge(readings: &[Reading], rules: &BridgeRules) -> Bridged {
             out.skipped.push(Skip::UnlocatedClear);
             continue;
         }
-        for place in places {
-            match observation(reading, kind, place, rules) {
+        for (order, place) in places.into_iter().enumerate() {
+            let position = InPost {
+                statement: u16::try_from(statement).ok(),
+                place_order: u16::try_from(order).ok(),
+            };
+            match observation(reading, kind, place, position, rules) {
                 Ok(observation) => {
                     if observation.stance == Stance::Neutralized {
                         // Until tracks can subtract objects, an interception keeps saying what
@@ -155,10 +159,17 @@ pub fn bridge(readings: &[Reading], rules: &BridgeRules) -> Bridged {
     out
 }
 
+/// Where an observation stands in its post.
+struct InPost {
+    statement: Option<u16>,
+    place_order: Option<u16>,
+}
+
 fn observation(
     reading: &Reading,
     kind: HazardKind,
     place: &PlaceMention,
+    position: InPost,
     rules: &BridgeRules,
 ) -> Result<SignalObservation, CoverError> {
     let centre = Position::new(place.lon, place.lat)
@@ -193,6 +204,8 @@ fn observation(
                 PlaceRole::Via => Role::Via,
                 _ => Role::Target,
             }),
+            statement: position.statement,
+            place_order: position.place_order,
         },
     })
 }
@@ -254,6 +267,33 @@ mod tests {
         assert_eq!(b.observations[0].ttl.get(), 30 * 60);
         assert_eq!(b.observations[1].count, Some(1));
         assert_eq!(bridged("3 мопеда на Киев").observations[0].count, Some(3));
+    }
+
+    #[test]
+    fn each_observation_knows_its_statement_and_where_its_place_stands_in_it() {
+        let b = bridged("мопед через Бровары на Киев");
+        let order: Vec<_> = b
+            .observations
+            .iter()
+            .map(|o| {
+                (
+                    o.provenance.place_name.as_deref().unwrap(),
+                    o.provenance.statement,
+                    o.provenance.place_order,
+                )
+            })
+            .collect();
+        assert_eq!(
+            order,
+            [("Бровари", Some(0), Some(0)), ("Київ", Some(0), Some(1))]
+        );
+        let two = bridged("2 шахеда на Одессу. 3 шахеда на Киев");
+        let statements: Vec<_> = two
+            .observations
+            .iter()
+            .map(|o| (o.provenance.statement, o.count))
+            .collect();
+        assert_eq!(statements, [(Some(0), Some(2)), (Some(1), Some(3))]);
     }
 
     #[test]
