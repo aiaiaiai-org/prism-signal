@@ -43,6 +43,10 @@
 
 use std::collections::{BTreeMap, BTreeSet};
 
+mod tracks;
+
+pub use tracks::{Motion, PathPoint, Track, TrackEvent, TrackEventKind, TrackPolicy, TrackStatus};
+
 use prism_signal_core::{
     CellId, CellResolution, ConfidenceBand, ExternalId, Geometry, HazardKind, PlaceRole,
     SignalObservation, SourceId, Stance, Timestamp,
@@ -122,6 +126,8 @@ pub struct FusionPolicy {
     pub point_radius_km: f64,
     /// Corners of that disc.
     pub disc_vertices: usize,
+    /// How objects are followed; see [`Track`].
+    pub tracks: TrackPolicy,
 }
 
 impl FusionPolicy {
@@ -143,6 +149,7 @@ impl FusionPolicy {
             max_cells: 400,
             point_radius_km: 10.0,
             disc_vertices: 48,
+            tracks: TrackPolicy::v1(),
         }
     }
 }
@@ -282,6 +289,13 @@ pub struct Assessed {
     pub events: Vec<AssessmentEvent>,
     /// Observations that could not be used.
     pub skipped: Vec<Skipped>,
+    /// Every reported object in the window, oldest first, with its status as of the evaluation
+    /// time. Additive: a consumer that reads only assessments is unaffected.
+    #[serde(default)]
+    pub tracks: Vec<Track>,
+    /// Every track event the window implies, in the order they took effect.
+    #[serde(default)]
+    pub track_events: Vec<TrackEvent>,
 }
 
 struct Footprint {
@@ -625,5 +639,7 @@ pub fn assess(
     });
     out.assessments = closed;
     out.events = events;
+    let observed: Vec<&SignalObservation> = usable.iter().map(|item| item.0).collect();
+    (out.tracks, out.track_events) = tracks::follow(&observed, policy, now);
     out
 }

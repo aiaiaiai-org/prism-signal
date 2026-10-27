@@ -73,7 +73,7 @@ Fuses a window of observations, as of an instant, into assessments and events. S
 {"policy_version": "fusion.v1", "evaluation_time": "2026-09-28T22:30:00Z", "observations": [ /* at most 5000 */ ]}
 ```
 
-`evaluation_time` is required: the runtime never reads a clock. Observations reported after it are ignored. The result is `{assessments, events, skipped}`.
+`evaluation_time` is required: the runtime never reads a clock. Observations reported after it are ignored. The result is `{assessments, events, skipped, tracks, track_events}`. `tracks` and `track_events` are additive ([`tracking.md`](tracking.md)); a consumer that reads only assessments is unaffected.
 
 ## Failures
 
